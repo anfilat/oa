@@ -1,0 +1,94 @@
+; Сортировка
+<input> 5 4 3 0 2 1
+; <input> 8 0 1 2 3 4 5 6 7
+; <input> 8 7 6 5 4 3 2 1 0
+; <input> 0
+; <input> 1 8
+; <input> 7 7 7 7 7 7 7 7
+; <input> 6 1 2 1 2 1 2
+
+read 0	; r0 = input[0]
+jz exit	; ничего не делаем, если 0 элементов
+
+store 1	; (n)r1 длина входного массива
+
+store 2	; r2 = n итератор по массиву
+load =10
+store 3	; указатель на начало массива
+
+next_in:
+	read *3	; считываем элемент
+
+	load 3 	; адрес следующего элемента
+	add =1
+	store 3
+
+	load 2		; уменьшаем счетчик итератора
+	sub =1
+	store 2
+	jgtz next_in	; цикл до n
+
+load 1	; if (n == 1) выйти без сортиовки
+sub =1
+jz write_out
+
+load =10
+store 4	; (i)r4 указатель на даные внешнего цикла
+loop_i:
+	load 4
+	add =1
+	store 5	; (k)r5 = i + 1 - указатель внутреннего цикла
+
+loop_k:
+		load *4	; r0 = element[i] - element[k]
+		sub *5
+		jgtz swap	; r0 > 0 меняем элементы
+		jmp next_k	; идем на следующую итерацию
+
+swap:
+			load *4	; t = element[i]
+			store 6
+			load *5	; element[i] = element[k]
+			store *4
+			load 6	; element[k] = t
+			store *5
+
+next_k:
+		load 5	; k++
+		add =1
+		store 5
+		sub =10	; превращаем указатель на память в смещение
+		sub 1	; сравнениваем k с n
+		jz next_i	; if k == n возвращаемся на внешний цикл
+		jmp loop_k	; следующая итерация внутреннего цикла
+
+next_i:
+	load 4	; i++
+	add =1
+	store 4
+	sub =10	; превращаем указатель на память в смещение
+	sub 1	; сравнениваем i с n - 1
+	add =1
+	jz write_out	; if i == (n - 1) сортировка окончена
+	jmp loop_i	; следующая итерация внешнего цикла
+
+write_out:
+load 1	; r2 = n итератор по выходному массиву
+store 2
+load =10	; указатель на начало массива
+store 3
+
+next_out:
+	write *3	; записываем элемент
+
+	load 3	; адрес следующего элемента
+	add =1
+	store 3
+
+	load 2	; уменьшаем счетчик итератора
+	sub =1
+	store 2
+	jgtz next_out	; цикл до n
+
+exit:
+halt
