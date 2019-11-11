@@ -6,10 +6,12 @@
   "scripts": {
     "test": "mocha",
     "bench:add": "node --expose-gc ./bench/benchAdd.js",
+    "bench:addRandom": "node --expose-gc ./bench/benchAddRandom.js",
+    "bench:addToEnd": "node --expose-gc ./bench/benchAddToEnd.js",
     "bench:addBigInit": "node --expose-gc ./bench/benchAddBigInit.js",
     "bench:read": "node --expose-gc ./bench/benchRead.js",
     "bench:remove": "node --expose-gc ./bench/benchRemove.js",
-    "bench": "npm run bench:add && npm run bench:addBigInit && npm run bench:read && npm run bench:remove"
+    "bench": "npm run bench:add && npm run bench:addRandom && npm run bench:addToEnd && npm run bench:addBigInit && npm run bench:read && npm run bench:remove"
   },
   "author": "",
   "license": "ISC",
