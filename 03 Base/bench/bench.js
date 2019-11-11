@@ -1,6 +1,7 @@
 const Benchmark = require('benchmark');
 const { SingleArray } = require('../singleArray');
 const { VectorArray } = require('../vectorArray');
+const { FactorArray } = require('../factorArray');
 const { SystemArray } = require('../systemArray');
 const { TypedF64Array } = require('../typedF64Array');
 
@@ -20,6 +21,12 @@ function bench(arrSize) {
                 arr.add(0, 0);
             }
         })
+        .add('FactorArray', function () {
+            const arr = new FactorArray();
+            for (let i = 0; i < arrSize; i++) {
+                arr.add(0, 0);
+            }
+        })
         .add('SystemArray', function () {
             const arr = new SystemArray();
             for (let i = 0; i < arrSize; i++) {
@@ -33,6 +40,7 @@ function bench(arrSize) {
             }
         })
         .on('cycle', function (event) {
+            global.gc();
             console.log('Вставка в начало', arrSize, String(event.target));
         })
         .run();
@@ -50,6 +58,12 @@ function bench(arrSize) {
                 arr.add(0, arr.length * Math.random() | 0);
             }
         })
+        .add('FactorArray', function () {
+            const arr = new FactorArray();
+            for (let i = 0; i < arrSize; i++) {
+                arr.add(0, arr.length * Math.random() | 0);
+            }
+        })
         .add('SystemArray', function () {
             const arr = new SystemArray();
             for (let i = 0; i < arrSize; i++) {
@@ -63,6 +77,7 @@ function bench(arrSize) {
             }
         })
         .on('cycle', function (event) {
+            global.gc();
             console.log('Случайная вставка', arrSize, String(event.target));
         })
         .run();
@@ -80,6 +95,12 @@ function bench(arrSize) {
                 arr.add(0, arr.length * Math.random() | 0);
             }
         })
+        .add('FactorArray', function () {
+            const arr = new FactorArray(arrSize);
+            for (let i = 0; i < arrSize; i++) {
+                arr.add(0, arr.length * Math.random() | 0);
+            }
+        })
         .add('SystemArray', function () {
             const arr = new SystemArray(arrSize);
             for (let i = 0; i < arrSize; i++) {
@@ -93,6 +114,7 @@ function bench(arrSize) {
             }
         })
         .on('cycle', function (event) {
+            global.gc();
             console.log('Случайная вставка без роста', arrSize, String(event.target));
         })
         .run();
@@ -110,6 +132,12 @@ function bench(arrSize) {
                 arr.add(0);
             }
         })
+        .add('FactorArray', function () {
+            const arr = new FactorArray();
+            for (let i = 0; i < arrSize; i++) {
+                arr.add(0);
+            }
+        })
         .add('SystemArray', function () {
             const arr = new SystemArray();
             for (let i = 0; i < arrSize; i++) {
@@ -123,6 +151,7 @@ function bench(arrSize) {
             }
         })
         .on('cycle', function (event) {
+            global.gc();
             console.log('Вставка в конец', arrSize, String(event.target));
         })
         .run();
@@ -135,6 +164,11 @@ function bench(arrSize) {
     const readVectorArray = new VectorArray();
     for (let i = 0; i < arrSize; i++) {
         readVectorArray.add(0);
+    }
+
+    const readFactorArray = new FactorArray();
+    for (let i = 0; i < arrSize; i++) {
+        readFactorArray.add(0);
     }
 
     const readSystemArray = new SystemArray();
@@ -158,6 +192,11 @@ function bench(arrSize) {
                 readVectorArray.get(readVectorArray.length * Math.random() | 0);
             }
         })
+        .add('FactorArray', function () {
+            for (let i = 0; i < arrSize; i++) {
+                readFactorArray.get(readFactorArray.length * Math.random() | 0);
+            }
+        })
         .add('SystemArray', function () {
             for (let i = 0; i < arrSize; i++) {
                 readSystemArray.get(readSystemArray.length * Math.random() | 0);
@@ -169,6 +208,7 @@ function bench(arrSize) {
             }
         })
         .on('cycle', function (event) {
+            global.gc();
             console.log('Чтение', arrSize, String(event.target));
         })
         .run();

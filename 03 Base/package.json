@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "bench": "node ./bench/bench.js"
+    "bench": "node --expose-gc ./bench/bench.js"
   },
   "author": "",
   "license": "ISC",

@@ -2,8 +2,11 @@ class BaseArray {
     _array;
     _length;
 
-    constructor(initLength = 0) {
-        this._array = new Array(initLength);
+    constructor(initLength = 0, arrayCtor = Array) {
+        if (new.target === BaseArray) {
+            throw new Error(`Don't use BaseArray directly`);
+        }
+        this._array = new arrayCtor(initLength);
         this._length = 0;
     }
 
@@ -61,8 +64,8 @@ class BaseArray {
         }
     }
 
+    // for override in descendant
     _newArray() {
-        throw new Error(`Don't use BaseArray directly`);
     }
 
     _moveToNewArray(newArray, value, index) {

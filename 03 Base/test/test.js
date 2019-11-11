@@ -2,11 +2,13 @@ const { describe, it, beforeEach } = require("mocha");
 const assert = require('assert').strict;
 const { SingleArray } = require('../singleArray');
 const { VectorArray } = require('../vectorArray');
+const { FactorArray } = require('../factorArray');
 const { SystemArray } = require('../systemArray');
 const { TypedF64Array } = require('../typedF64Array');
 
 testFor('SingleArray', SingleArray);
 testFor('VectorArray', VectorArray);
+testFor('FactorArray', FactorArray);
 testFor('SystemArray', SystemArray);
 testFor('TypedF64Array', TypedF64Array);
 

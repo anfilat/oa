@@ -3,7 +3,7 @@ const {BaseArray} = require("./baseArray");
 class VectorArray extends BaseArray {
     #delta;
 
-    constructor(initLength = 0, delta = 10) {
+    constructor(initLength, delta = 10) {
         super(initLength);
         this.#delta = delta;
     }

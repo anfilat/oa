@@ -1,9 +1,8 @@
 const {BaseArray} = require("./baseArray");
 
 class TypedF64Array extends BaseArray {
-    constructor(initLength = 4) {
-        super(initLength);
-        this._array = new Float64Array(initLength);
+    constructor(initLength) {
+        super(initLength || 4, Float64Array);
     }
 
     _add(value, index) {
