@@ -18,7 +18,9 @@ class TypedF64Array extends BaseArray {
     }
 
     _remove(index) {
-        this._array.copyWithin(index, index + 1, this.length);
+        if (index < this.length) {
+            this._array.copyWithin(index, index + 1, this.length);
+        }
     }
 }
 
