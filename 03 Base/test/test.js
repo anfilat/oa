@@ -3,12 +3,14 @@ const assert = require('assert').strict;
 const { SingleArray } = require('../singleArray');
 const { VectorArray } = require('../vectorArray');
 const { FactorArray } = require('../factorArray');
+const { MatrixArray } = require('../matrixArray');
 const { SystemArray } = require('../systemArray');
 const { TypedF64Array } = require('../typedF64Array');
 
 testFor('SingleArray', SingleArray);
 testFor('VectorArray', VectorArray);
 testFor('FactorArray', FactorArray);
+testFor('MatrixArray', MatrixArray);
 testFor('SystemArray', SystemArray);
 testFor('TypedF64Array', TypedF64Array);
 
@@ -43,11 +45,11 @@ function testFor(name, ctor) {
 
         it('add method - multiple calls', () => {
             for (let i = 0; i < 1000; i++) {
-                arr.add(42);
+                arr.add(i, 0);
             }
             assert.strictEqual(arr.length, 1000);
-            assert.strictEqual(arr.get(0), 42);
-            assert.strictEqual(arr.get(arr.length - 1), 42);
+            assert.strictEqual(arr.get(0), 999);
+            assert.strictEqual(arr.get(arr.length - 1), 0);
         });
 
         it('add with index', () => {
@@ -81,14 +83,16 @@ function testFor(name, ctor) {
 
         it('add and remove methods - multiple calls', () => {
             for (let i = 0; i < 1000; i++) {
-                arr.add(42);
+                arr.add(i, 0);
             }
             assert.strictEqual(arr.length, 1000);
 
             for (let i = 0; i < 500; i++) {
-                arr.remove(arr.length - 1);
+                arr.remove(0);
             }
             assert.strictEqual(arr.length, 500);
+            assert.strictEqual(arr.get(0), 499);
+            assert.strictEqual(arr.get(arr.length - 1), 0);
 
             for (let i = 0; i < 1000; i++) {
                 arr.add(42);

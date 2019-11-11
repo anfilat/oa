@@ -2,12 +2,16 @@ class BaseArray {
     _array;
     _length;
 
-    constructor(initLength = 0, arrayCtor = Array) {
+    constructor(initLength = 0) {
         if (new.target === BaseArray) {
             throw new Error(`Don't use BaseArray directly`);
         }
-        this._array = new arrayCtor(initLength);
+        this._createInitArray(initLength);
         this._length = 0;
+    }
+
+    _createInitArray(initLength) {
+        this._array = new Array(initLength);
     }
 
     get length() {
@@ -25,7 +29,7 @@ class BaseArray {
 
     remove(index) {
         this._checkIndex(index);
-        const value = this._array[index];
+        const value = this.get(index);
         this._remove(index);
         this._length--;
         return value;
@@ -54,14 +58,17 @@ class BaseArray {
     }
 
     _add(value, index) {
-        if (this.length === this._array.length) {
+        if (this._isArrayFull()) {
             const newArray = this._newArray();
             this._moveToNewArray(newArray, value, index);
-        } else if (index === this.length) {
-            this._array[index] = value;
+            this._array = newArray;
         } else {
-            this._array.splice(index, 0, value);
+            this._insert(value, index);
         }
+    }
+
+    _isArrayFull() {
+        return this.length === this._array.length;
     }
 
     // for override in descendant
@@ -73,16 +80,21 @@ class BaseArray {
             newArray[i] = this._array[i];
         }
         newArray[index] = value;
-        for (let i = this.length; i > index; i--) {
-            newArray[i] = this._array[i - 1];
+        for (let i = index; i < this.length; i++) {
+            newArray[i + 1] = this._array[i];
         }
+    }
 
-        this._array = newArray;
+    _insert(value, index) {
+        for (let i = this.length; i > index; i--) {
+            this._array[i] = this._array[i - 1];
+        }
+        this._array[index] = value;
     }
 
     _remove(index) {
-        if (index < this.length) {
-            this._array.splice(index, 1);
+        for (let i = index; i < this.length - 1; i++) {
+            this._array[i] = this._array[i + 1];
         }
     }
 }
