@@ -1,31 +1,30 @@
 class BaseArray {
     _array;
-    _size;
+    _length;
 
-    constructor() {
-        this._array = [];
-        this._size = 0;
+    constructor(initLength = 0) {
+        this._array = new Array(initLength);
+        this._length = 0;
     }
 
-    size() {
-        return this._size;
+    get length() {
+        return this._length;
     }
 
     add(value, index) {
         if (index === undefined) {
-            index = this.size();
+            index = this.length;
         }
         this._checkIndexForAdd(index);
-        this._resizeAndMoveForAdd(index);
-        this._size++;
-        this._array[index] = value;
+        this._add(value, index);
+        this._length++;
     }
 
     remove(index) {
         this._checkIndex(index);
         const value = this._array[index];
-        this._moveForRemove(index);
-        this._size--;
+        this._remove(index);
+        this._length--;
         return value;
     }
 
@@ -40,24 +39,47 @@ class BaseArray {
     }
 
     _checkIndexForAdd(index) {
-        if (index < 0 || index > this.size()) {
-            throw new RangeError(`index ${index} out of range [0, ${this.size()}]`);
+        if (index < 0 || index > this.length) {
+            throw new RangeError(`index ${index} out of range [0, ${this.length}]`);
         }
     }
 
     _checkIndex(index) {
-        if (index === undefined || index < 0 || index >= this.size()) {
-            throw new RangeError(`index ${index} out of range [0, ${this.size() - 1}]`);
+        if (index === undefined || index < 0 || index >= this.length) {
+            throw new RangeError(`index ${index} out of range [0, ${this.length - 1}]`);
         }
     }
 
-    _resizeAndMoveForAdd(index) {
+    _add(value, index) {
+        if (this.length === this._array.length) {
+            const newArray = this._newArray();
+            this._moveToNewArray(newArray, value, index);
+        } else if (index === this.length) {
+            this._array[index] = value;
+        } else {
+            this._array.splice(index, 0, value);
+        }
+    }
+
+    _newArray() {
         throw new Error(`Don't use BaseArray directly`);
     }
 
-    _moveForRemove(index) {
-        for (let i = index + 1; i < this.size(); i++) {
-            this._array[i - 1] = this._array[i];
+    _moveToNewArray(newArray, value, index) {
+        for (let i = 0; i < index; i++) {
+            newArray[i] = this._array[i];
+        }
+        newArray[index] = value;
+        for (let i = this.length; i > index; i--) {
+            newArray[i] = this._array[i - 1];
+        }
+
+        this._array = newArray;
+    }
+
+    _remove(index) {
+        if (index < this.length) {
+            this._array.splice(index, 1);
         }
     }
 }

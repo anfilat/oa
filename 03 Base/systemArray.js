@@ -1,9 +1,11 @@
 const {BaseArray} = require("./baseArray");
 
 class SystemArray extends BaseArray {
-    _resizeAndMoveForAdd(index) {
-        for (let i = this.size(); i > index; i--) {
-            this._array[i] = this._array[i - 1];
+    _add(value, index) {
+        if (index === this.length) {
+            this._array[index] = value;
+        } else {
+            this._array.splice(index, 0, value);
         }
     }
 }
