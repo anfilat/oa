@@ -4,6 +4,7 @@ const { SingleArray } = require('../singleArray');
 const { VectorArray } = require('../vectorArray');
 const { FactorArray } = require('../factorArray');
 const { MatrixArray } = require('../matrixArray');
+const { SpaceArray } = require('../spaceArray');
 const { SystemArray } = require('../systemArray');
 const { TypedF64Array } = require('../typedF64Array');
 
@@ -11,6 +12,7 @@ testFor('SingleArray', SingleArray);
 testFor('VectorArray', VectorArray);
 testFor('FactorArray', FactorArray);
 testFor('MatrixArray', MatrixArray);
+testFor('SpaceArray', SpaceArray);
 testFor('SystemArray', SystemArray);
 testFor('TypedF64Array', TypedF64Array);
 

@@ -37,12 +37,12 @@ class BaseArray {
 
     get(index) {
         this._checkIndex(index);
-        return this._array[index];
+        return this._get(index);
     }
 
     set(value, index) {
         this._checkIndex(index);
-        this._array[index] = value;
+        this._set(value, index);
     }
 
     _checkIndexForAdd(index) {
@@ -96,6 +96,14 @@ class BaseArray {
         for (let i = index; i < this.length - 1; i++) {
             this._array[i] = this._array[i + 1];
         }
+    }
+
+    _get(index) {
+        return this._array[index];
+    }
+
+    _set(value, index) {
+        this._array[index] = value;
     }
 }
 

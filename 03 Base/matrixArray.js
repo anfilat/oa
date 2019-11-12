@@ -20,13 +20,11 @@ class MatrixArray extends BaseArray {
         this._array = new SingleArray();
     }
 
-    get(index) {
-        this._checkIndex(index);
+    _get(index) {
         return this._array.get(this._rowIndex(index)).get(this._colIndex(index));
     }
 
-    set(value, index) {
-        this._checkIndex(index);
+    _set(value, index) {
         this._array.get(this._rowIndex(index)).set(value, this._colIndex(index));
     }
 

@@ -3,6 +3,7 @@ const { SingleArray } = require('../singleArray');
 const { VectorArray } = require('../vectorArray');
 const { FactorArray } = require('../factorArray');
 const { MatrixArray } = require('../matrixArray');
+const { SpaceArray } = require('../spaceArray');
 const { SystemArray } = require('../systemArray');
 const { TypedF64Array } = require('../typedF64Array');
 
@@ -27,6 +28,11 @@ function bench(arrSize) {
     const readMatrixArray = new MatrixArray();
     for (let i = 0; i < arrSize; i++) {
         readMatrixArray.add(0);
+    }
+
+    const readSpaceArray = new SpaceArray();
+    for (let i = 0; i < arrSize; i++) {
+        readSpaceArray.add(0);
     }
 
     const readSystemArray = new SystemArray();
@@ -58,6 +64,11 @@ function bench(arrSize) {
         .add('MatrixArray', function () {
             for (let i = 0; i < arrSize; i++) {
                 readMatrixArray.get(readMatrixArray.length * Math.random() | 0);
+            }
+        })
+        .add('SpaceArray', function () {
+            for (let i = 0; i < arrSize; i++) {
+                readSpaceArray.get(readSpaceArray.length * Math.random() | 0);
             }
         })
         .add('SystemArray', function () {

@@ -1,5 +1,4 @@
 const Benchmark = require('benchmark');
-const { SingleArray } = require('../singleArray');
 const { VectorArray } = require('../vectorArray');
 const { FactorArray } = require('../factorArray');
 const { MatrixArray } = require('../matrixArray');
@@ -10,12 +9,6 @@ const { TypedF64Array } = require('../typedF64Array');
 
 function bench(arrSize) {
     new Benchmark.Suite('Случайная вставка без роста')
-        .add('SingleArray', function () {
-            const arr = new SingleArray(arrSize);
-            for (let i = 0; i < arrSize; i++) {
-                arr.add(0, arr.length * Math.random() | 0);
-            }
-        })
         .add('VectorArray', function () {
             const arr = new VectorArray(arrSize);
             for (let i = 0; i < arrSize; i++) {
