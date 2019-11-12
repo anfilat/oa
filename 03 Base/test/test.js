@@ -1,4 +1,4 @@
-const { describe, it, beforeEach } = require("mocha");
+const { describe, it, beforeEach } = require('mocha');
 const assert = require('assert').strict;
 const { SingleArray } = require('../singleArray');
 const { VectorArray } = require('../vectorArray');
