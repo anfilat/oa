@@ -26,7 +26,11 @@ function readFile(name) {
 }
 
 function toLines(str) {
-    return str.split('\n');
+    const lines = str.split('\n');
+    if (str.endsWith('\n')) {
+        lines.pop();
+    }
+    return lines;
 }
 
 exports.readCases = readCases;
