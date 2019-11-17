@@ -71,64 +71,13 @@ class Board {
         const nH = 0x7f7f7f7f7f7f7f7fn;
         const nGH = 0x3f3f3f3f3f3f3f3fn;
 
-        const knightBits = ceilToBitBoard(ceil);
-        const steps = nGH & (knightBits << 6n | knightBits >> 10n) |
-            nH & (knightBits << 15n | knightBits >> 17n) |
-            nA  & (knightBits << 17n | knightBits >> 15n) |
-            nAB & (knightBits << 10n | knightBits >> 6n);
+        const bitBoard = ceilToBitBoard(ceil);
+        const steps =
+            nGH & (bitBoard << 6n | bitBoard >> 10n) |
+            nH & (bitBoard << 15n | bitBoard >> 17n) |
+            nA  & (bitBoard << 17n | bitBoard >> 15n) |
+            nAB & (bitBoard << 10n | bitBoard >> 6n);
         return steps & ~this._stepMask(color);
-    }
-
-    rookSteps(ceil, color ='w') {
-        let steps = 0n;
-        const col = ceil % 8;
-        const row = (ceil - col) / 8;
-        const mask = this._stepMask(color);
-        const stopMask = this._oppositeStepMask(color);
-
-        let bitBoard = ceilToBitBoard(ceil);
-        for (let i = col - 1; i >= 0; i--) {
-            bitBoard >>= 1n;
-            if (applyBitBoard(bitBoard)) {
-                break;
-            }
-        }
-
-        bitBoard = ceilToBitBoard(ceil);
-        for (let i = col + 1; i <= 7; i++) {
-            bitBoard <<= 1n;
-            if (applyBitBoard(bitBoard)) {
-                break;
-            }
-        }
-
-        bitBoard = ceilToBitBoard(ceil);
-        for (let i = row - 1; i >= 0; i--) {
-            bitBoard >>= 8n;
-            if (applyBitBoard(bitBoard)) {
-                break;
-            }
-        }
-
-        bitBoard = ceilToBitBoard(ceil);
-        for (let i = row + 1; i <= 7; i++) {
-            bitBoard <<= 8n;
-            if (applyBitBoard(bitBoard)) {
-                break;
-            }
-        }
-
-        return steps;
-
-        function applyBitBoard(bitBoard) {
-            if ((bitBoard & mask) !== 0n) {
-                return true;
-            }
-            steps |= bitBoard;
-            if ((bitBoard & stopMask) !== 0n) {
-                return true;
-            }
-        }
     }
 
     bishopsSteps(ceil, color ='w') {
@@ -183,8 +132,73 @@ class Board {
         }
     }
 
+    rookSteps(ceil, color ='w') {
+        let steps = 0n;
+        const col = ceil % 8;
+        const row = (ceil - col) / 8;
+        const mask = this._stepMask(color);
+        const stopMask = this._oppositeStepMask(color);
+
+        let bitBoard = ceilToBitBoard(ceil);
+        for (let i = col - 1; i >= 0; i--) {
+            bitBoard >>= 1n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        bitBoard = ceilToBitBoard(ceil);
+        for (let i = col + 1; i <= 7; i++) {
+            bitBoard <<= 1n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        bitBoard = ceilToBitBoard(ceil);
+        for (let i = row - 1; i >= 0; i--) {
+            bitBoard >>= 8n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        bitBoard = ceilToBitBoard(ceil);
+        for (let i = row + 1; i <= 7; i++) {
+            bitBoard <<= 8n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        return steps;
+
+        function applyBitBoard(bitBoard) {
+            if ((bitBoard & mask) !== 0n) {
+                return true;
+            }
+            steps |= bitBoard;
+            if ((bitBoard & stopMask) !== 0n) {
+                return true;
+            }
+        }
+    }
+
     queensSteps(ceil, color ='w') {
         return this.rookSteps(ceil, color) | this.bishopsSteps(ceil, color);
+    }
+
+    kingSteps(ceil, color = 'w') {
+        const nA = 0xFeFeFeFeFeFeFeFen;
+        const nH = 0x7f7f7f7f7f7f7f7fn;
+        const n9 = 0xffffffffffffffffn;
+
+        const bitBoard = ceilToBitBoard(ceil);
+        const steps =
+            nH & (bitBoard << 7n | bitBoard >> 1n | bitBoard >> 9n) |
+            n9 & (bitBoard << 8n | bitBoard >> 8n) |
+            nA & (bitBoard << 9n | bitBoard << 1n | bitBoard >> 7n);
+        return steps & ~this._stepMask(color);
     }
 
     toBitBoards() {

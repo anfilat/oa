@@ -17,22 +17,14 @@ describe.each(readCases('./0.BITS/3710.0.Bitboard - Конь'))
         const board = new Board();
         const steps = board.knightSteps(parseInt(inPar[0]));
         const count = bitCount(steps);
-        const result = [count.toString(), steps.toString()];
+        const result = [
+            count.toString(),
+            steps.toString(),
+        ];
 
         expect(result).toEqual(outPar);
     });
 });
-
-/*describe('test', () => {
-    it.only('test', () => {
-        const board = Board.fromFEN('5k2/1Pr5/4Q1n1/8/5B2/1R3p2/7q/1bK5');
-        const rooks = board.getRooks();
-        const rookSteps = board.rookSteps(rooks[0]);
-        const result = [rookSteps.toString()];
-
-        expect(result).toEqual(['2207650742786']);
-    });
-});*/
 
 describe.each(readCases('./0.BITS/3718.0.Bitboard - Ферзь'))
 ('0.BITS/3718.0.Bitboard - Ферзь', (inPar, outPar) => {
@@ -48,6 +40,21 @@ describe.each(readCases('./0.BITS/3718.0.Bitboard - Ферзь'))
             rookSteps.toString(),
             bishopsSteps.toString(),
             queensSteps.toString(),
+        ];
+
+        expect(result).toEqual(outPar);
+    });
+});
+
+describe.each(readCases('./0.BITS/3733.0.Bitboard - Король'))
+('0.BITS/3733.0.Bitboard - Король', (inPar, outPar) => {
+    it(inPar[0], () => {
+        const board = new Board();
+        const steps = board.kingSteps(parseInt(inPar[0]));
+        const count = bitCount(steps);
+        const result = [
+            count.toString(),
+            steps.toString(),
         ];
 
         expect(result).toEqual(outPar);
