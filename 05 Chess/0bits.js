@@ -41,6 +41,52 @@ class Board {
         return board;
     }
 
+    /*setPawn(num, color = 'w') {
+        this._setFigure(num, color, '_whitePawns', '_blackKnights');
+    }
+
+    setKnight(num, color = 'w') {
+        this._setFigure(num, color, '_whiteKnights', '_blackPawns');
+    }
+
+    setBishop(num, color = 'w') {
+        this._setFigure(num, color, '_whiteBishops', '_blackBishops');
+    }
+
+    setRook(num, color = 'w') {
+        this._setFigure(num, color, '_whiteRooks', '_blackRooks');
+    }
+
+    setQueen(num, color = 'w') {
+        this._setFigure(num, color, '_whiteQueens', '_blackQueens');
+    }
+
+    setKing(num, color = 'w') {
+        this._setFigure(num, color, '_whiteKing', '_blackKing');
+    }
+
+    _setFigure(num, color, whiteBitBoard, blackBitBoard) {
+        const bit = 1n << BigInt(num);
+        if (color === 'w') {
+            this[whiteBitBoard] |= bit;
+        } else {
+            this[blackBitBoard] |= bit;
+        }
+    }*/
+
+    knightSteps(num) {
+        const nA = 0xFeFeFeFeFeFeFeFen;
+        const nAB = 0xFcFcFcFcFcFcFcFcn;
+        const nH = 0x7f7f7f7f7f7f7f7fn;
+        const nGH = 0x3f3f3f3f3f3f3f3fn;
+
+        const knightBits = 1n << BigInt(num);
+        return nGH & (knightBits << 6n | knightBits >> 10n) |
+            nH & (knightBits << 15n | knightBits >> 17n) |
+            nA  & (knightBits << 17n | knightBits >> 15n) |
+            nAB & (knightBits << 10n | knightBits >> 6n);
+    }
+
     toBitBoards() {
         return [
             this._whitePawns.toString(),
@@ -60,4 +106,15 @@ class Board {
     }
 }
 
+function bitCount(bitBoard) {
+    let count = 0;
+    while (bitBoard !== 0n) {
+        bitBoard &= (bitBoard - 1n);
+        count++;
+    }
+
+    return count;
+}
+
 exports.Board = Board;
+exports.bitCount = bitCount;
