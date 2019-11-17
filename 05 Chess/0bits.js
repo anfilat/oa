@@ -30,7 +30,7 @@ class Board {
             for (let char of line) {
                 const index = figures.indexOf(char);
                 if (index !== -1) {
-                    board[vars[index]] |= 1n << BigInt(col);
+                    board[vars[index]] |= ceilToBitBoard(col);
                     col++;
                 } else if (char >= '0' && char <= '9') {
                     col += parseInt(char, 10);
@@ -41,50 +41,150 @@ class Board {
         return board;
     }
 
-    /*setPawn(num, color = 'w') {
-        this._setFigure(num, color, '_whitePawns', '_blackKnights');
+    getPawns(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whitePawns : this._blackKnights);
     }
 
-    setKnight(num, color = 'w') {
-        this._setFigure(num, color, '_whiteKnights', '_blackPawns');
+    getKnights(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteKnights : this._blackPawns);
     }
 
-    setBishop(num, color = 'w') {
-        this._setFigure(num, color, '_whiteBishops', '_blackBishops');
+    getBishops(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteBishops : this._blackBishops);
     }
 
-    setRook(num, color = 'w') {
-        this._setFigure(num, color, '_whiteRooks', '_blackRooks');
+    getRooks(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteRooks : this._blackRooks);
     }
 
-    setQueen(num, color = 'w') {
-        this._setFigure(num, color, '_whiteQueens', '_blackQueens');
+    getQueens(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteQueens : this._blackQueens);
     }
 
-    setKing(num, color = 'w') {
-        this._setFigure(num, color, '_whiteKing', '_blackKing');
+    getKings(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteKing : this._blackKing);
     }
 
-    _setFigure(num, color, whiteBitBoard, blackBitBoard) {
-        const bit = 1n << BigInt(num);
-        if (color === 'w') {
-            this[whiteBitBoard] |= bit;
-        } else {
-            this[blackBitBoard] |= bit;
-        }
-    }*/
-
-    knightSteps(num) {
+    knightSteps(ceil, color = 'w') {
         const nA = 0xFeFeFeFeFeFeFeFen;
         const nAB = 0xFcFcFcFcFcFcFcFcn;
         const nH = 0x7f7f7f7f7f7f7f7fn;
         const nGH = 0x3f3f3f3f3f3f3f3fn;
 
-        const knightBits = 1n << BigInt(num);
-        return nGH & (knightBits << 6n | knightBits >> 10n) |
+        const knightBits = ceilToBitBoard(ceil);
+        const steps = nGH & (knightBits << 6n | knightBits >> 10n) |
             nH & (knightBits << 15n | knightBits >> 17n) |
             nA  & (knightBits << 17n | knightBits >> 15n) |
             nAB & (knightBits << 10n | knightBits >> 6n);
+        return steps & ~this._stepMask(color);
+    }
+
+    rookSteps(ceil, color ='w') {
+        let steps = 0n;
+        const col = ceil % 8;
+        const row = (ceil - col) / 8;
+        const mask = this._stepMask(color);
+        const stopMask = this._oppositeStepMask(color);
+
+        let bitBoard = ceilToBitBoard(ceil);
+        for (let i = col - 1; i >= 0; i--) {
+            bitBoard >>= 1n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        bitBoard = ceilToBitBoard(ceil);
+        for (let i = col + 1; i <= 7; i++) {
+            bitBoard <<= 1n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        bitBoard = ceilToBitBoard(ceil);
+        for (let i = row - 1; i >= 0; i--) {
+            bitBoard >>= 8n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        bitBoard = ceilToBitBoard(ceil);
+        for (let i = row + 1; i <= 7; i++) {
+            bitBoard <<= 8n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        return steps;
+
+        function applyBitBoard(bitBoard) {
+            if ((bitBoard & mask) !== 0n) {
+                return true;
+            }
+            steps |= bitBoard;
+            if ((bitBoard & stopMask) !== 0n) {
+                return true;
+            }
+        }
+    }
+
+    bishopsSteps(ceil, color ='w') {
+        let steps = 0n;
+        const col = ceil % 8;
+        const row = (ceil - col) / 8;
+        const mask = this._stepMask(color);
+        const stopMask = this._oppositeStepMask(color);
+
+        let bitBoard = ceilToBitBoard(ceil);
+        for (let i = col - 1, j = row - 1; i >= 0 && j >= 0; i--, j--) {
+            bitBoard >>= 9n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        bitBoard = ceilToBitBoard(ceil);
+        for (let i = col - 1, j = row + 1; i >= 0 && j <= 7; i--, j++) {
+            bitBoard <<= 7n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        bitBoard = ceilToBitBoard(ceil);
+        for (let i = col + 1, j = row - 1; i <= 7 && j >= 0; i++, j--) {
+            bitBoard >>= 7n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        bitBoard = ceilToBitBoard(ceil);
+        for (let i = col + 1, j = row + 1; i <= 7 && j <= 7; i++, j++) {
+            bitBoard <<= 9n;
+            if (applyBitBoard(bitBoard)) {
+                break;
+            }
+        }
+
+        return steps;
+
+        function applyBitBoard(bitBoard) {
+            if ((bitBoard & mask) !== 0n) {
+                return true;
+            }
+            steps |= bitBoard;
+            if ((bitBoard & stopMask) !== 0n) {
+                return true;
+            }
+        }
+    }
+
+    queensSteps(ceil, color ='w') {
+        return this.rookSteps(ceil, color) | this.bishopsSteps(ceil, color);
     }
 
     toBitBoards() {
@@ -104,8 +204,53 @@ class Board {
             this._blackKing.toString(),
         ]
     }
+
+    // маска для проверки - можно ли ходить в эту клетку
+    _stepMask(color) {
+        return color === 'w' ? this._whites() : this._blacks();
+    }
+
+    // маска для проверки - была фигура противника в клетке
+    _oppositeStepMask(color) {
+        return color === 'w' ? this._blacks() : this._whites();
+    }
+
+    _whites() {
+        return this._whitePawns |
+            this._whiteKnights |
+            this._whiteBishops |
+            this._whiteRooks |
+            this._whiteQueens |
+            this._whiteKing;
+    }
+
+    _blacks() {
+        return this._blackPawns |
+            this._blackKnights |
+            this._blackBishops |
+            this._blackRooks |
+            this._blackQueens |
+            this._blackKing;
+    }
+
+    // возвращает все фигуры из указанного bitboard
+    _getFigures(bitBoard) {
+        const result = [];
+        for (let i = 0; i < 64; i++) {
+            if ((bitBoard & 1n) === 1n) {
+                result.push(i);
+            }
+            bitBoard >>= 1n;
+        }
+        return result;
+    }
 }
 
+function ceilToBitBoard(ceil) {
+    return 1n << BigInt(ceil);
+}
+
+// количество установленных битов
 function bitCount(bitBoard) {
     let count = 0;
     while (bitBoard !== 0n) {
