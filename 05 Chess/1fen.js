@@ -28,6 +28,8 @@ class Board {
     _halfSteps;
     _stepNum;
 
+    // установка состояния доски из входных данных
+
     fromFEN(fen) {
         const fenParts = this._splitFenToParts(fen);
 
@@ -41,29 +43,87 @@ class Board {
         return this;
     }
 
-    getPawns(color = 'w') {
-        return this._getFigures(color === 'w' ? this._whitePawns : this._blackKnights);
+    // генерация выходных представлений доски
+
+    toBitBoards() {
+        return [
+            this._whitePawns.toString(),
+            this._whiteKnights.toString(),
+            this._whiteBishops.toString(),
+            this._whiteRooks.toString(),
+            this._whiteQueens.toString(),
+            this._whiteKing.toString(),
+
+            this._blackPawns.toString(),
+            this._blackKnights.toString(),
+            this._blackBishops.toString(),
+            this._blackRooks.toString(),
+            this._blackQueens.toString(),
+            this._blackKing.toString(),
+        ]
     }
 
-    getKnights(color = 'w') {
-        return this._getFigures(color === 'w' ? this._whiteKnights : this._blackPawns);
+    toPicture() {
+        const result = [];
+        result.push('  +-----------------+');
+
+        for (let row = 7; row >= 0; row--) {
+            let line = `${row + 1} | `;
+            for (let col = 0; col <= 7; col++) {
+                line += this._getASCIIFigure(col, row) + ' ';
+            }
+            line += '|';
+            result.push(line);
+        }
+
+        result.push('  +-----------------+');
+        result.push('    a b c d e f g h  ');
+
+        return result;
     }
 
-    getBishops(color = 'w') {
-        return this._getFigures(color === 'w' ? this._whiteBishops : this._blackBishops);
+    toFEN() {
+        return `${this._figuresToFEN()} ${this._nextStep} ${this._castling} ${this._pawnOnPass} ${this._halfSteps} ${this._stepNum}`
     }
 
-    getRooks(color = 'w') {
-        return this._getFigures(color === 'w' ? this._whiteRooks : this._blackRooks);
+    // выполнение хода
+
+    doStep(step) {
+        const {startCol, startRow, endCol, endRow} = this._parseStep(step);
+
+        const figureVar = this._getFigureVar(startCol, startRow);
+        const endCeilFigureVar = this._getFigureVar(endCol, endRow);
+
+        const startMask = colRowToBitBoard(startCol, startRow);
+        const endMask = colRowToBitBoard(endCol, endRow);
+
+        // переставляем фигуру
+        this[figureVar] &= ~startMask;
+        this[figureVar] |= endMask;
+
+        // снимаем фигуру
+        if (endCeilFigureVar) {
+            this[endCeilFigureVar] &= ~endMask;
+        }
+
+        this._whites = this._calcWhites();
+        this._blacks = this._calcBlacks();
+
+        this._changeHalfSteps(figureVar, endCeilFigureVar);
+        this._changeTurn();
     }
 
-    getQueens(color = 'w') {
-        return this._getFigures(color === 'w' ? this._whiteQueens : this._blackQueens);
+    doHalfStep(step) {
+        const {startCol, startRow, endCol, endRow} = this._parseStep(step);
+
+        const figureVar = this._getFigureVar(startCol, startRow);
+        const endCeilFigureVar = this._getFigureVar(endCol, endRow);
+
+        this._changeHalfSteps(figureVar, endCeilFigureVar);
+        this._changeTurn();
     }
 
-    getKings(color = 'w') {
-        return this._getFigures(color === 'w' ? this._whiteKing : this._blackKing);
-    }
+    // генерация возможных ходов
 
     knightSteps(ceil, color = 'w') {
         const nA = 0xFeFeFeFeFeFeFeFen;
@@ -75,7 +135,7 @@ class Board {
         const steps =
             nGH & (bitBoard << 6n | bitBoard >> 10n) |
             nH & (bitBoard << 15n | bitBoard >> 17n) |
-            nA  & (bitBoard << 17n | bitBoard >> 15n) |
+            nA & (bitBoard << 17n | bitBoard >> 15n) |
             nAB & (bitBoard << 10n | bitBoard >> 6n);
         return steps & ~this._stepMask(color);
     }
@@ -122,10 +182,12 @@ class Board {
         return steps;
 
         function applyBitBoard(bitBoard) {
+            // проверка, что ячейка пустая или занята фигурой другого цвета (значит в нее можно ходить)
             if ((bitBoard & mask) !== 0n) {
                 return true;
             }
             steps |= bitBoard;
+            // проверка, что ячейка занята фигурой другого цвета (значит дальше по этой линии нельзя ходить)
             if ((bitBoard & stopMask) !== 0n) {
                 return true;
             }
@@ -201,82 +263,35 @@ class Board {
         return steps & ~this._stepMask(color);
     }
 
-    toBitBoards() {
-        return [
-            this._whitePawns.toString(),
-            this._whiteKnights.toString(),
-            this._whiteBishops.toString(),
-            this._whiteRooks.toString(),
-            this._whiteQueens.toString(),
-            this._whiteKing.toString(),
+    // получение состояния доски
 
-            this._blackPawns.toString(),
-            this._blackKnights.toString(),
-            this._blackBishops.toString(),
-            this._blackRooks.toString(),
-            this._blackQueens.toString(),
-            this._blackKing.toString(),
-        ]
+    getPawns(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whitePawns : this._blackKnights);
     }
 
-    toPicture() {
-        const result = [];
-        result.push('  +-----------------+');
-
-        for (let row = 7; row >= 0; row--) {
-            let line = `${row + 1} | `;
-            for (let col = 0; col <= 7; col++) {
-                line += this._getASCIIFigure(col, row) + ' ';
-            }
-            line += '|';
-            result.push(line);
-        }
-
-        result.push('  +-----------------+');
-        result.push('    a b c d e f g h  ');
-
-        return result;
+    getKnights(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteKnights : this._blackPawns);
     }
 
-    toFEN() {
-        return `${this._figuresToFEN()} ${this._nextStep} ${this._castling} ${this._pawnOnPass} ${this._halfSteps} ${this._stepNum}`
+    getBishops(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteBishops : this._blackBishops);
     }
 
-    doStep(step) {
-        const {startCol, startRow, endCol, endRow} = this._parseStep(step);
-
-        const figureBB = this._getFigureVar(startCol, startRow);
-        const endCeilFigureBB = this._getFigureVar(endCol, endRow);
-
-        const startMask = colRowToBitBoard(startCol, startRow);
-        const endMask = colRowToBitBoard(endCol, endRow);
-
-        // переставляем фигуру
-        this[figureBB] &= ~startMask;
-        this[figureBB] |= endMask;
-
-        // снимаем фигуру
-        if (endCeilFigureBB) {
-            this[endCeilFigureBB] &= ~endMask;
-        }
-
-        this._whites = this._calcWhites();
-        this._blacks = this._calcBlacks();
-        this._changeHalfSteps(figureBB, endCeilFigureBB);
-        this._changeTurn();
+    getRooks(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteRooks : this._blackRooks);
     }
 
-    doHalfStep(step) {
-        const {startCol, startRow, endCol, endRow} = this._parseStep(step);
+    getQueens(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteQueens : this._blackQueens);
+    }
 
-        const figureBB = this._getFigureVar(startCol, startRow);
-        const endCeilFigureBB = this._getFigureVar(endCol, endRow);
-
-        this._changeHalfSteps(figureBB, endCeilFigureBB);
-        this._changeTurn();
+    getKings(color = 'w') {
+        return this._getFigures(color === 'w' ? this._whiteKing : this._blackKing);
     }
 
     // дальше внутренние методы
+
+    // парсинг входных данных
 
     _splitFenToParts(fen) {
         return fen.split(/\s+/);
@@ -327,6 +342,23 @@ class Board {
         return parseInt(str, 10);
     }
 
+    _parseStep(step) {
+        step = step.toLowerCase();
+        const startCol = step.charCodeAt(0) - 'a'.charCodeAt(0);
+        const startRow = parseInt(step[1], 10) - 1;
+        const endCol = step.charCodeAt(2) - 'a'.charCodeAt(0);
+        const endRow = parseInt(step[3], 10) - 1;
+
+        return {
+            startCol,
+            startRow,
+            endCol,
+            endRow
+        };
+    }
+
+    // генерация выходных представлений доски (вспомогательные методы)
+
     _figuresToFEN() {
         let result = '';
         for (let row = 7; row > 0; row--) {
@@ -359,34 +391,9 @@ class Board {
         return line;
     }
 
-    // маска для проверки - можно ли ходить в эту клетку
-    _stepMask(color) {
-        return color === 'w' ? this._whites : this._blacks;
-    }
+    // получение внутреннего состояния в удобном виде
 
-    // маска для проверки - была фигура противника в клетке
-    _oppositeStepMask(color) {
-        return color === 'w' ? this._blacks : this._whites;
-    }
-
-    _calcWhites() {
-        return this._whitePawns |
-            this._whiteKnights |
-            this._whiteBishops |
-            this._whiteRooks |
-            this._whiteQueens |
-            this._whiteKing;
-    }
-
-    _calcBlacks() {
-        return this._blackPawns |
-            this._blackKnights |
-            this._blackBishops |
-            this._blackRooks |
-            this._blackQueens |
-            this._blackKing;
-    }
-
+    // для генерации выходных данных
     _getASCIIFigure(col, row) {
         const mask = colRowToBitBoard(col, row);
 
@@ -407,6 +414,11 @@ class Board {
         return '.';
     }
 
+    _isEmptyCeil(asciiFigure) {
+        return asciiFigure === '.';
+    }
+
+    // для выполнения хода
     _getFigureVar(col, row) {
         const mask = colRowToBitBoard(col, row);
 
@@ -427,6 +439,22 @@ class Board {
         return null;
     }
 
+    _isPawn(figureVar) {
+        return figureVar === '_whitePawns' || figureVar === '_blackPawns';
+    }
+
+    // прочие методы получения внутреннего состояния в удобном виде
+
+    // маска для проверки - можно ли ходить в эту клетку
+    _stepMask(color) {
+        return color === 'w' ? this._whites : this._blacks;
+    }
+
+    // маска для проверки - была ли фигура противника в клетке
+    _oppositeStepMask(color) {
+        return color === 'w' ? this._blacks : this._whites;
+    }
+
     // возвращает все фигуры из указанного bitboard
     _getFigures(bitBoard) {
         const result = [];
@@ -439,24 +467,7 @@ class Board {
         return result;
     }
 
-    _parseStep(step) {
-        step = step.toLowerCase();
-        const startCol = step.charCodeAt(0) - 'a'.charCodeAt(0);
-        const startRow = parseInt(step[1], 10) - 1;
-        const endCol = step.charCodeAt(2) - 'a'.charCodeAt(0);
-        const endRow = parseInt(step[3], 10) - 1;
-
-        return {
-            startCol,
-            startRow,
-            endCol,
-            endRow
-        };
-    }
-
-    _isEmptyCeil(asciiFigure) {
-        return asciiFigure === '.';
-    }
+    // изменение внутреннего состояния
 
     _changeHalfSteps(figureBB, endCeilFigureBB) {
         if (this._isPawn(figureBB) || endCeilFigureBB) {
@@ -475,8 +486,23 @@ class Board {
         }
     }
 
-    _isPawn(bitBoard) {
-        return bitBoard === '_whitePawns' || bitBoard === '_blackPawns';
+    // подсчет вспомогательной маски всех белых фигур
+    _calcWhites() {
+        return this._whitePawns |
+            this._whiteKnights |
+            this._whiteBishops |
+            this._whiteRooks |
+            this._whiteQueens |
+            this._whiteKing;
+    }
+
+    _calcBlacks() {
+        return this._blackPawns |
+            this._blackKnights |
+            this._blackBishops |
+            this._blackRooks |
+            this._blackQueens |
+            this._blackKing;
     }
 }
 
