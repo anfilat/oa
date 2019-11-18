@@ -242,27 +242,38 @@ class Board {
         return `${this._figuresToFEN()} ${this._nextStep} ${this._castling} ${this._pawnOnPass} ${this._halfSteps} ${this._stepNum}`
     }
 
+    doStep(step) {
+        const {startCol, startRow, endCol, endRow} = this._parseStep(step);
+
+        const figureBB = this._getFigureVar(startCol, startRow);
+        const endCeilFigureBB = this._getFigureVar(endCol, endRow);
+
+        const startMask = colRowToBitBoard(startCol, startRow);
+        const endMask = colRowToBitBoard(endCol, endRow);
+
+        // переставляем фигуру
+        this[figureBB] &= ~startMask;
+        this[figureBB] |= endMask;
+
+        // снимаем фигуру
+        if (endCeilFigureBB) {
+            this[endCeilFigureBB] &= ~endMask;
+        }
+
+        this._whites = this._calcWhites();
+        this._blacks = this._calcBlacks();
+        this._changeHalfSteps(figureBB, endCeilFigureBB);
+        this._changeTurn();
+    }
+
     doHalfStep(step) {
         const {startCol, startRow, endCol, endRow} = this._parseStep(step);
 
-        const figure = this._getASCIIFigure(startCol, startRow);
-        const endCeilFigure = this._getASCIIFigure(endCol, endRow);
+        const figureBB = this._getFigureVar(startCol, startRow);
+        const endCeilFigureBB = this._getFigureVar(endCol, endRow);
 
-        if (this._isPawn(figure) || !this._isEmptyCeil(endCeilFigure)) {
-            this._halfSteps = 0;
-        } else {
-            this._halfSteps++;
-        }
-        this.changeTurn();
-    }
-
-    changeTurn() {
-        if (this._nextStep === 'w') {
-            this._nextStep = 'b';
-        } else {
-            this._nextStep = 'w';
-            this._stepNum++;
-        }
+        this._changeHalfSteps(figureBB, endCeilFigureBB);
+        this._changeTurn();
     }
 
     // дальше внутренние методы
@@ -377,7 +388,7 @@ class Board {
     }
 
     _getASCIIFigure(col, row) {
-        const mask = 1n << BigInt(row * 8 + col);
+        const mask = colRowToBitBoard(col, row);
 
         if ((this._whites & mask) === mask) {
             for (let i = 0; i < 6; i++) {
@@ -394,6 +405,26 @@ class Board {
             }
         }
         return '.';
+    }
+
+    _getFigureVar(col, row) {
+        const mask = colRowToBitBoard(col, row);
+
+        if ((this._whites & mask) === mask) {
+            for (let i = 0; i < 6; i++) {
+                if ((this[vars[i]] & mask) === mask) {
+                    return vars[i];
+                }
+            }
+        }
+        if ((this._blacks & mask) === mask) {
+            for (let i = 6; i < 12; i++) {
+                if ((this[vars[i]] & mask) === mask) {
+                    return vars[i];
+                }
+            }
+        }
+        return null;
     }
 
     // возвращает все фигуры из указанного bitboard
@@ -427,9 +458,30 @@ class Board {
         return asciiFigure === '.';
     }
 
-    _isPawn(asciiFigure) {
-        return asciiFigure === 'P' || asciiFigure === 'p';
+    _changeHalfSteps(figureBB, endCeilFigureBB) {
+        if (this._isPawn(figureBB) || endCeilFigureBB) {
+            this._halfSteps = 0;
+        } else {
+            this._halfSteps++;
+        }
     }
+
+    _changeTurn() {
+        if (this._nextStep === 'w') {
+            this._nextStep = 'b';
+        } else {
+            this._nextStep = 'w';
+            this._stepNum++;
+        }
+    }
+
+    _isPawn(bitBoard) {
+        return bitBoard === '_whitePawns' || bitBoard === '_blackPawns';
+    }
+}
+
+function colRowToBitBoard(col, row) {
+    return 1n << BigInt(row * 8 + col);
 }
 
 function ceilToBitBoard(ceil) {
