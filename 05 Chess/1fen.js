@@ -91,20 +91,46 @@ class Board {
     doStep(step) {
         const {startCol, startRow, endCol, endRow, promotion} = this._parseStep(step);
 
+        // на каком bitBoard ход
         const figureVar = this._getFigureVar(startCol, startRow);
-        const endCeilFigureVar = this._getFigureVar(endCol, endRow);
+        // откуда
+        const startMask = this._colRowToBitBoard(startCol, startRow);
+        // куда
+        const endMask = this._colRowToBitBoard(endCol, endRow);
 
-        const startMask = colRowToBitBoard(startCol, startRow);
-        const endMask = colRowToBitBoard(endCol, endRow);
+        // на каком bitBoard берется фигура
+        let takeFigureVar;
+        // где
+        let takeMask;
 
-        if (promotion) {
-            this._promotionPawn(figureVar, startMask, endMask, promotion);
-        } else {
+        if (this._isTakeOnPass(figureVar, step)) {
+            // перемещение фигуры
             this._moveFigure(figureVar, startMask, endMask);
+
+            // правка хода пешки на два поля
+            this._clearPawnOnPass();
+
+            // подготовка переменных для взятия
+            takeFigureVar = this._getFigureVar(endCol, startRow);
+            takeMask = this._colRowToBitBoard(endCol, startRow);
+        } else {
+            // перемещение фигуры
+            if (promotion) {
+                this._promotionPawn(figureVar, startMask, endMask, promotion);
+            } else {
+                this._moveFigure(figureVar, startMask, endMask);
+            }
+
+            // правка хода пешки на два поля
+            this._changePawnOnPass(figureVar, startCol, startRow, endRow);
+
+            // подготовка переменных для взятия
+            takeFigureVar = this._getFigureVar(endCol, endRow);
+            takeMask = endMask;
         }
-        this._takeFigure(endCeilFigureVar, endMask);
+        this._takeFigure(takeFigureVar, takeMask);
         this._calcWhitesAndBlacksBB();
-        this._changeHalfSteps(figureVar, endCeilFigureVar);
+        this._changeHalfSteps(figureVar, takeFigureVar);
         this._changeTurn();
     }
 
@@ -112,9 +138,9 @@ class Board {
         const {startCol, startRow, endCol, endRow} = this._parseStep(step);
 
         const figureVar = this._getFigureVar(startCol, startRow);
-        const endCeilFigureVar = this._getFigureVar(endCol, endRow);
+        const takeFigureVar = this._getFigureVar(endCol, endRow);
 
-        this._changeHalfSteps(figureVar, endCeilFigureVar);
+        this._changeHalfSteps(figureVar, takeFigureVar);
         this._changeTurn();
     }
 
@@ -126,7 +152,7 @@ class Board {
         const nH = 0x7f7f7f7f7f7f7f7fn;
         const nGH = 0x3f3f3f3f3f3f3f3fn;
 
-        const bitBoard = ceilToBitBoard(ceil);
+        const bitBoard = this._ceilToBitBoard(ceil);
         const steps =
             nGH & (bitBoard << 6n | bitBoard >> 10n) |
             nH & (bitBoard << 15n | bitBoard >> 17n) |
@@ -142,7 +168,7 @@ class Board {
         const mask = this._stepMask(color);
         const stopMask = this._oppositeStepMask(color);
 
-        let bitBoard = ceilToBitBoard(ceil);
+        let bitBoard = this._ceilToBitBoard(ceil);
         for (let i = col - 1, j = row - 1; i >= 0 && j >= 0; i--, j--) {
             bitBoard >>= 9n;
             if (applyBitBoard(bitBoard)) {
@@ -150,7 +176,7 @@ class Board {
             }
         }
 
-        bitBoard = ceilToBitBoard(ceil);
+        bitBoard = this._ceilToBitBoard(ceil);
         for (let i = col - 1, j = row + 1; i >= 0 && j <= 7; i--, j++) {
             bitBoard <<= 7n;
             if (applyBitBoard(bitBoard)) {
@@ -158,7 +184,7 @@ class Board {
             }
         }
 
-        bitBoard = ceilToBitBoard(ceil);
+        bitBoard = this._ceilToBitBoard(ceil);
         for (let i = col + 1, j = row - 1; i <= 7 && j >= 0; i++, j--) {
             bitBoard >>= 7n;
             if (applyBitBoard(bitBoard)) {
@@ -166,7 +192,7 @@ class Board {
             }
         }
 
-        bitBoard = ceilToBitBoard(ceil);
+        bitBoard = this._ceilToBitBoard(ceil);
         for (let i = col + 1, j = row + 1; i <= 7 && j <= 7; i++, j++) {
             bitBoard <<= 9n;
             if (applyBitBoard(bitBoard)) {
@@ -196,7 +222,7 @@ class Board {
         const mask = this._stepMask(color);
         const stopMask = this._oppositeStepMask(color);
 
-        let bitBoard = ceilToBitBoard(ceil);
+        let bitBoard = this._ceilToBitBoard(ceil);
         for (let i = col - 1; i >= 0; i--) {
             bitBoard >>= 1n;
             if (applyBitBoard(bitBoard)) {
@@ -204,7 +230,7 @@ class Board {
             }
         }
 
-        bitBoard = ceilToBitBoard(ceil);
+        bitBoard = this._ceilToBitBoard(ceil);
         for (let i = col + 1; i <= 7; i++) {
             bitBoard <<= 1n;
             if (applyBitBoard(bitBoard)) {
@@ -212,7 +238,7 @@ class Board {
             }
         }
 
-        bitBoard = ceilToBitBoard(ceil);
+        bitBoard = this._ceilToBitBoard(ceil);
         for (let i = row - 1; i >= 0; i--) {
             bitBoard >>= 8n;
             if (applyBitBoard(bitBoard)) {
@@ -220,7 +246,7 @@ class Board {
             }
         }
 
-        bitBoard = ceilToBitBoard(ceil);
+        bitBoard = this._ceilToBitBoard(ceil);
         for (let i = row + 1; i <= 7; i++) {
             bitBoard <<= 8n;
             if (applyBitBoard(bitBoard)) {
@@ -250,7 +276,7 @@ class Board {
         const nH = 0x7f7f7f7f7f7f7f7fn;
         const n9 = 0xffffffffffffffffn;
 
-        const bitBoard = ceilToBitBoard(ceil);
+        const bitBoard = this._ceilToBitBoard(ceil);
         const steps =
             nH & (bitBoard << 7n | bitBoard >> 1n | bitBoard >> 9n) |
             n9 & (bitBoard << 8n | bitBoard >> 8n) |
@@ -302,7 +328,7 @@ class Board {
             for (let char of line) {
                 const index = figures.indexOf(char);
                 if (index !== -1) {
-                    this[vars[index]] |= ceilToBitBoard(col);
+                    this[vars[index]] |= this._ceilToBitBoard(col);
                     col++;
                 } else if (char >= '0' && char <= '9') {
                     col += parseInt(char, 10);
@@ -390,7 +416,7 @@ class Board {
 
     // для генерации выходных данных
     _getASCIIFigure(col, row) {
-        const mask = colRowToBitBoard(col, row);
+        const mask = this._colRowToBitBoard(col, row);
 
         if ((this._whites & mask) === mask) {
             for (let i = 0; i < 6; i++) {
@@ -415,7 +441,7 @@ class Board {
 
     // для выполнения хода
     _getFigureVar(col, row) {
-        const mask = colRowToBitBoard(col, row);
+        const mask = this._colRowToBitBoard(col, row);
 
         if ((this._whites & mask) === mask) {
             for (let i = 0; i < 6; i++) {
@@ -487,6 +513,36 @@ class Board {
         }
     }
 
+    // ход - взятие пешки на проходе
+    _isTakeOnPass(figureVar, step) {
+        return this._isPawn(figureVar) && step.substr(2, 2) === this._pawnOnPass;
+    }
+
+    _changePawnOnPass(figureVar, startCol, startRow, endRow) {
+        if (this._isPawnJump(figureVar, startCol, startRow, endRow)) {
+            this._pawnOnPass = this._colRowToStep(startCol, (startRow + endRow) >> 1);
+        } else {
+            this._clearPawnOnPass();
+        }
+    }
+
+    // надо ли сохранить поле для взятия пешки на проходе
+    _isPawnJump(figureVar, startCol, startRow, endRow) {
+        if (!this._isPawn(figureVar)) {
+            return false;
+        }
+        if (Math.abs(startRow - endRow) !== 2) {
+            return false;
+        }
+        const oppositePawns = this._nextStep === 'w' ? this._blackPawns : this._whitePawns;
+        return (startCol > 0 && ((oppositePawns & this._colRowToBitBoard(startCol - 1, endRow)) !== 0n)) ||
+            (startCol < 7 && ((oppositePawns & this._colRowToBitBoard(startCol + 1, endRow)) !== 0n));
+    }
+
+    _clearPawnOnPass() {
+        this._pawnOnPass = '-';
+    }
+
     _changeHalfSteps(figureVar, endCeilFigureVar) {
         if (this._isPawn(figureVar) || endCeilFigureVar) {
             this._halfSteps = 0;
@@ -519,14 +575,20 @@ class Board {
             this._blackQueens |
             this._blackKing;
     }
-}
 
-function colRowToBitBoard(col, row) {
-    return 1n << BigInt(row * 8 + col);
-}
+    // преобразования между форматами
 
-function ceilToBitBoard(ceil) {
-    return 1n << BigInt(ceil);
+    _colRowToBitBoard(col, row) {
+        return 1n << BigInt(row * 8 + col);
+    }
+
+    _ceilToBitBoard(ceil) {
+        return 1n << BigInt(ceil);
+    }
+
+    _colRowToStep(col, row) {
+        return String.fromCharCode('a'.charCodeAt(0) + col) + (row + 1);
+    }
 }
 
 // количество установленных битов
