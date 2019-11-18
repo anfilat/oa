@@ -242,6 +242,29 @@ class Board {
         return `${this._figuresToFEN()} ${this._nextStep} ${this._castling} ${this._pawnOnPass} ${this._halfSteps} ${this._stepNum}`
     }
 
+    doHalfStep(step) {
+        const {startCol, startRow, endCol, endRow} = this._parseStep(step);
+
+        const figure = this._getASCIIFigure(startCol, startRow);
+        const endCeilFigure = this._getASCIIFigure(endCol, endRow);
+
+        if (this._isPawn(figure) || !this._isEmptyCeil(endCeilFigure)) {
+            this._halfSteps = 0;
+        } else {
+            this._halfSteps++;
+        }
+        this.changeTurn();
+    }
+
+    changeTurn() {
+        if (this._nextStep === 'w') {
+            this._nextStep = 'b';
+        } else {
+            this._nextStep = 'w';
+            this._stepNum++;
+        }
+    }
+
     // дальше внутренние методы
 
     _splitFenToParts(fen) {
@@ -308,7 +331,7 @@ class Board {
         let skip = 0;
         for (let col = 0; col <= 7; col++) {
             const figure = this._getASCIIFigure(col, row);
-            if (figure === '.') {
+            if (this._isEmptyCeil(figure)) {
                 skip++;
             } else {
                 if (skip) {
@@ -385,13 +408,27 @@ class Board {
         return result;
     }
 
-    _changeTurn() {
-        if (this._nextStep === 'w') {
-            this._nextStep = 'b';
-        } else {
-            this._nextStep = 'w';
-            this._stepNum++;
-        }
+    _parseStep(step) {
+        step = step.toLowerCase();
+        const startCol = step.charCodeAt(0) - 'a'.charCodeAt(0);
+        const startRow = parseInt(step[1], 10) - 1;
+        const endCol = step.charCodeAt(2) - 'a'.charCodeAt(0);
+        const endRow = parseInt(step[3], 10) - 1;
+
+        return {
+            startCol,
+            startRow,
+            endCol,
+            endRow
+        };
+    }
+
+    _isEmptyCeil(asciiFigure) {
+        return asciiFigure === '.';
+    }
+
+    _isPawn(asciiFigure) {
+        return asciiFigure === 'P' || asciiFigure === 'p';
     }
 }
 
