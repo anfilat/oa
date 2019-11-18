@@ -22,27 +22,21 @@ class Board {
     _whites = 0n;
     _blacks = 0n;
 
+    _nextStep;
+    _castling;
+    _pawnOnPass;
+    _halfSteps;
+    _stepNum;
+
     fromFEN(fen) {
         const fenParts = this._splitFenToParts(fen);
-        const lines = fenParts[0].split('/');
 
-        for (let row = 0; row < 8; row++) {
-            const line = lines[7 - row];
-
-            let col = row * 8;
-            for (let char of line) {
-                const index = figures.indexOf(char);
-                if (index !== -1) {
-                    this[vars[index]] |= ceilToBitBoard(col);
-                    col++;
-                } else if (char >= '0' && char <= '9') {
-                    col += parseInt(char, 10);
-                }
-            }
-        }
-
-        this._whites = this._calcWhites();
-        this._blacks = this._calcBlacks();
+        this._parseFENBoard(fenParts[0]);
+        this._nextStep = this._parseNextStep(fenParts[1]);
+        this._castling = this._parseCastling(fenParts[2]);
+        this._pawnOnPass = fenParts[3];
+        this._halfSteps = this._parseHalfStep(fenParts[4]);
+        this._stepNum = this._parseStepNum(fenParts[5]);
 
         return this;
     }
@@ -244,10 +238,91 @@ class Board {
         return result;
     }
 
+    toFEN() {
+        return `${this._figuresToFEN()} ${this._nextStep} ${this._castling} ${this._pawnOnPass} ${this._halfSteps} ${this._stepNum}`
+    }
+
     // дальше внутренние методы
 
     _splitFenToParts(fen) {
         return fen.split(/\s+/);
+    }
+
+    _parseFENBoard(fenBoard) {
+        const lines = fenBoard.split('/');
+
+        for (let row = 0; row < 8; row++) {
+            const line = lines[7 - row];
+
+            let col = row * 8;
+            for (let char of line) {
+                const index = figures.indexOf(char);
+                if (index !== -1) {
+                    this[vars[index]] |= ceilToBitBoard(col);
+                    col++;
+                } else if (char >= '0' && char <= '9') {
+                    col += parseInt(char, 10);
+                }
+            }
+        }
+
+        this._whites = this._calcWhites();
+        this._blacks = this._calcBlacks();
+    }
+
+    _parseNextStep(str) {
+        return str.toLowerCase();
+    }
+
+    _parseCastling(str) {
+        if (str === '-') {
+            return '-';
+        }
+        return '' +
+            (str.includes('K') ? 'K' : '') +
+            (str.includes('Q') ? 'Q' : '') +
+            (str.includes('k') ? 'k' : '') +
+            (str.includes('q') ? 'q' : '');
+    }
+
+    _parseHalfStep(str) {
+        return parseInt(str, 10);
+    }
+
+    _parseStepNum(str) {
+        return parseInt(str, 10);
+    }
+
+    _figuresToFEN() {
+        let result = '';
+        for (let row = 7; row > 0; row--) {
+            result += this._FENRow(row) + '/';
+        }
+        result += this._FENRow(0);
+
+        return result;
+    }
+
+    _FENRow(row) {
+        let line = '';
+        let skip = 0;
+        for (let col = 0; col <= 7; col++) {
+            const figure = this._getASCIIFigure(col, row);
+            if (figure === '.') {
+                skip++;
+            } else {
+                if (skip) {
+                    line += skip;
+                    skip = 0;
+                }
+                line += figure;
+            }
+        }
+        if (skip) {
+            line += skip;
+        }
+
+        return line;
     }
 
     // маска для проверки - можно ли ходить в эту клетку
