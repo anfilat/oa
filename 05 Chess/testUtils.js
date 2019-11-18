@@ -27,7 +27,7 @@ function readFile(name) {
 
 function toLines(str) {
     const lines = str.split('\n');
-    if (str.endsWith('\n')) {
+    while (lines.length > 1 && !lines[lines.length - 1]) {
         lines.pop();
     }
     return lines;
