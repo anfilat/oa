@@ -384,6 +384,15 @@ class Board {
         }
         return result;
     }
+
+    _changeTurn() {
+        if (this._nextStep === 'w') {
+            this._nextStep = 'b';
+        } else {
+            this._nextStep = 'w';
+            this._stepNum++;
+        }
+    }
 }
 
 function ceilToBitBoard(ceil) {
