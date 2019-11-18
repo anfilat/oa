@@ -89,7 +89,7 @@ class Board {
     // выполнение хода
 
     doStep(step) {
-        const {startCol, startRow, endCol, endRow} = this._parseStep(step);
+        const {startCol, startRow, endCol, endRow, promotion} = this._parseStep(step);
 
         const figureVar = this._getFigureVar(startCol, startRow);
         const endCeilFigureVar = this._getFigureVar(endCol, endRow);
@@ -97,18 +97,13 @@ class Board {
         const startMask = colRowToBitBoard(startCol, startRow);
         const endMask = colRowToBitBoard(endCol, endRow);
 
-        // переставляем фигуру
-        this[figureVar] &= ~startMask;
-        this[figureVar] |= endMask;
-
-        // снимаем фигуру
-        if (endCeilFigureVar) {
-            this[endCeilFigureVar] &= ~endMask;
+        if (promotion) {
+            this._promotionPawn(figureVar, startMask, endMask, promotion);
+        } else {
+            this._moveFigure(figureVar, startMask, endMask);
         }
-
-        this._whites = this._calcWhites();
-        this._blacks = this._calcBlacks();
-
+        this._takeFigure(endCeilFigureVar, endMask);
+        this._calcWhitesAndBlacksBB();
         this._changeHalfSteps(figureVar, endCeilFigureVar);
         this._changeTurn();
     }
@@ -315,8 +310,7 @@ class Board {
             }
         }
 
-        this._whites = this._calcWhites();
-        this._blacks = this._calcBlacks();
+        this._calcWhitesAndBlacksBB();
     }
 
     _parseNextStep(str) {
@@ -343,17 +337,18 @@ class Board {
     }
 
     _parseStep(step) {
-        step = step.toLowerCase();
         const startCol = step.charCodeAt(0) - 'a'.charCodeAt(0);
         const startRow = parseInt(step[1], 10) - 1;
         const endCol = step.charCodeAt(2) - 'a'.charCodeAt(0);
         const endRow = parseInt(step[3], 10) - 1;
+        const promotion = step[4];
 
         return {
             startCol,
             startRow,
             endCol,
-            endRow
+            endRow,
+            promotion
         };
     }
 
@@ -469,8 +464,31 @@ class Board {
 
     // изменение внутреннего состояния
 
-    _changeHalfSteps(figureBB, endCeilFigureBB) {
-        if (this._isPawn(figureBB) || endCeilFigureBB) {
+    // переставляем фигуру
+    _moveFigure(figureVar, startMask, endMask) {
+        this[figureVar] &= ~startMask;
+        this[figureVar] |= endMask;
+    }
+
+    // превращение пешки
+    _promotionPawn(figureVar, startMask, endMask, promotion) {
+        // снимаем пешку
+        this[figureVar] &= ~startMask;
+        // находим переменную с bitBoard для новой фигуры
+        const index = figures.indexOf(promotion);
+        // добавляем новую фигуру
+        this[vars[index]] |= endMask;
+    }
+
+    // снимаем фигуру
+    _takeFigure(endCeilFigureVar, endMask) {
+        if (endCeilFigureVar) {
+            this[endCeilFigureVar] &= ~endMask;
+        }
+    }
+
+    _changeHalfSteps(figureVar, endCeilFigureVar) {
+        if (this._isPawn(figureVar) || endCeilFigureVar) {
             this._halfSteps = 0;
         } else {
             this._halfSteps++;
@@ -487,17 +505,14 @@ class Board {
     }
 
     // подсчет вспомогательной маски всех белых фигур
-    _calcWhites() {
-        return this._whitePawns |
+    _calcWhitesAndBlacksBB() {
+        this._whites = this._whitePawns |
             this._whiteKnights |
             this._whiteBishops |
             this._whiteRooks |
             this._whiteQueens |
             this._whiteKing;
-    }
-
-    _calcBlacks() {
-        return this._blackPawns |
+        this._blacks = this._blackPawns |
             this._blackKnights |
             this._blackBishops |
             this._blackRooks |
