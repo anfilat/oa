@@ -96,32 +96,30 @@ class Board {
 
         // на каком bitBoard ход
         const figureVar = this._getFigureVar(startCol, startRow);
-        // откуда
-        const startMask = this._colRowToBitBoard(startCol, startRow);
-        // куда
-        const endMask = this._colRowToBitBoard(endCol, endRow);
 
         // на каком bitBoard берется фигура
         let takeFigureVar;
         // где
-        let takeMask;
+        let takeCol;
+        let takeRow;
 
         if (this._isTakeOnPass(figureVar, step)) {
             // перемещение фигуры
-            this._moveFigure(figureVar, startMask, endMask);
+            this._moveFigure(figureVar, startCol, startRow, endCol, endRow);
 
             // правка хода пешки на два поля
             this._clearPawnOnPass();
 
-            // подготовка переменных для взятия
+            // подготовка переменных для взятия (берется пешка, стоящая на одном ряду с берущей)
             takeFigureVar = this._getFigureVar(endCol, startRow);
-            takeMask = this._colRowToBitBoard(endCol, startRow);
+            takeCol = endCol;
+            takeRow = startRow;
         } else {
             // перемещение фигуры
             if (promotion) {
-                this._promotionPawn(figureVar, startMask, endMask, promotion);
+                this._promotionPawn(figureVar, startCol, startRow, endCol, endRow, promotion);
             } else {
-                this._moveFigure(figureVar, startMask, endMask);
+                this._moveFigure(figureVar, startCol, startRow, endCol, endRow);
             }
 
             // правка хода пешки на два поля
@@ -129,9 +127,10 @@ class Board {
 
             // подготовка переменных для взятия
             takeFigureVar = this._getFigureVar(endCol, endRow);
-            takeMask = endMask;
+            takeCol = endCol;
+            takeRow = endRow;
         }
-        this._takeFigure(takeFigureVar, takeMask);
+        this._takeFigure(takeFigureVar, takeCol, takeRow);
         this._calcWhitesAndBlacksBB();
         this._changeHalfSteps(figureVar, takeFigureVar);
         this._changeTurn();
@@ -426,13 +425,52 @@ class Board {
     // изменение внутреннего состояния
 
     // переставляем фигуру
-    _moveFigure(figureVar, startMask, endMask) {
+    _moveFigure(figureVar, startCol, startRow, endCol, endRow) {
+        const startMask = this._colRowToBitBoard(startCol, startRow);
+        const endMask = this._colRowToBitBoard(endCol, endRow);
+
         this[figureVar] &= ~startMask;
         this[figureVar] |= endMask;
+
+        // чистим флаги рокировки
+        if (this._color === 'w') {
+            if (startRow === 0) {
+                if (figureVar === '_whiteRooks') {
+                    if (startCol === 0) {
+                        this._castlingWhiteLong = false;
+                    } else if (startCol === 7) {
+                        this._castlingWhiteShort = false;
+                    }
+                } else if (figureVar === '_whiteKing') {
+                    if (startCol === 4) {
+                        this._castlingWhiteLong = false;
+                        this._castlingWhiteShort = false;
+                    }
+                }
+            }
+        } else {
+            if (startRow === 7) {
+                if (figureVar === '_blackRooks') {
+                    if (startCol === 0) {
+                        this._castlingBlackLong = false;
+                    } else if (startCol === 7) {
+                        this._castlingBlackShort = false;
+                    }
+                } else if (figureVar === '_blackKing') {
+                    if (startCol === 4) {
+                        this._castlingBlackLong = false;
+                        this._castlingBlackShort = false;
+                    }
+                }
+            }
+        }
     }
 
     // превращение пешки
-    _promotionPawn(figureVar, startMask, endMask, promotion) {
+    _promotionPawn(figureVar, startCol, startRow, endCol, endRow, promotion) {
+        const startMask = this._colRowToBitBoard(startCol, startRow);
+        const endMask = this._colRowToBitBoard(endCol, endRow);
+
         // снимаем пешку
         this[figureVar] &= ~startMask;
         // находим переменную с bitBoard для новой фигуры
@@ -442,9 +480,30 @@ class Board {
     }
 
     // снимаем фигуру
-    _takeFigure(endCeilFigureVar, endMask) {
+    _takeFigure(endCeilFigureVar, col, row) {
         if (endCeilFigureVar) {
-            this[endCeilFigureVar] &= ~endMask;
+            const mask = this._colRowToBitBoard(col, row);
+
+            this[endCeilFigureVar] &= ~mask;
+
+            // чистим флаги рокировки
+            if (this._color === 'w') {
+                if (row === 7 && endCeilFigureVar === '_blackRooks') {
+                    if (col === 0) {
+                        this._castlingBlackLong = false;
+                    } else if (col === 7) {
+                        this._castlingBlackShort = false;
+                    }
+                }
+            } else {
+                if (row === 0 && endCeilFigureVar === '_whiteRooks') {
+                    if (col === 0) {
+                        this._castlingWhiteLong = false;
+                    } else if (col === 7) {
+                        this._castlingWhiteShort = false;
+                    }
+                }
+            }
         }
     }
 

@@ -75,3 +75,14 @@ describe.each(readCases('./1.FEN/3714.1.Взятие на проходе'))
         expect(result).toEqual(outPar[0]);
     });
 });
+
+describe.each(readCases('./1.FEN/3715.1.Королевские флаги'))
+('1.FEN/3715.1.Королевские флаги', (inPar, outPar) => {
+    it(`${inPar[0]} ${inPar[1]}`, () => {
+        const board = new Board().fromFEN(inPar[0]);
+        board.doStep(inPar[1]);
+        const result = board.toFEN();
+
+        expect(result).toEqual(outPar[0]);
+    });
+});
