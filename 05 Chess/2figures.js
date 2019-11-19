@@ -181,61 +181,71 @@ class Board {
             .concat(this._allSteps('getQueens', 'queensSteps')));
     }
 
-    knightSteps(ceil, color = 'w') {
+    knightSteps(cell, color = 'w') {
         const nA = 0xFeFeFeFeFeFeFeFen;
         const nAB = 0xFcFcFcFcFcFcFcFcn;
         const nH = 0x7f7f7f7f7f7f7f7fn;
         const nGH = 0x3f3f3f3f3f3f3f3fn;
 
-        const bitBoard = this._ceilToBitBoard(ceil);
+        const bitBoard = this._cellToBitBoard(cell);
         const steps =
             nGH & (bitBoard << 6n | bitBoard >> 10n) |
             nH & (bitBoard << 15n | bitBoard >> 17n) |
             nA & (bitBoard << 17n | bitBoard >> 15n) |
             nAB & (bitBoard << 10n | bitBoard >> 6n);
-        return steps & ~this._stepMask(color);
+        const group = this._getFigures(steps & ~this._stepMask(color));
+
+        return [group];
     }
 
-    bishopsSteps(ceil, color ='w') {
-        let steps = 0n;
-        const col = ceil % 8;
-        const row = (ceil - col) / 8;
+    bishopsSteps(cell, color ='w') {
+        const result = [];
+        const col = cell % 8;
+        const row = (cell - col) / 8;
         const mask = this._stepMask(color);
         const stopMask = this._oppositeStepMask(color);
 
-        let bitBoard = this._ceilToBitBoard(ceil);
+        let steps = 0n;
+        let bitBoard = this._cellToBitBoard(cell);
         for (let i = col - 1, j = row - 1; i >= 0 && j >= 0; i--, j--) {
             bitBoard >>= 9n;
             if (applyBitBoard(bitBoard)) {
                 break;
             }
         }
+        result.push(this._getFigures(steps));
 
-        bitBoard = this._ceilToBitBoard(ceil);
+        steps = 0n;
+        bitBoard = this._cellToBitBoard(cell);
         for (let i = col - 1, j = row + 1; i >= 0 && j <= 7; i--, j++) {
             bitBoard <<= 7n;
             if (applyBitBoard(bitBoard)) {
                 break;
             }
         }
+        result.push(this._getFigures(steps));
 
-        bitBoard = this._ceilToBitBoard(ceil);
+        steps = 0n;
+        bitBoard = this._cellToBitBoard(cell);
         for (let i = col + 1, j = row - 1; i <= 7 && j >= 0; i++, j--) {
             bitBoard >>= 7n;
             if (applyBitBoard(bitBoard)) {
                 break;
             }
         }
+        result.push(this._getFigures(steps));
 
-        bitBoard = this._ceilToBitBoard(ceil);
+        steps = 0n;
+        bitBoard = this._cellToBitBoard(cell);
         for (let i = col + 1, j = row + 1; i <= 7 && j <= 7; i++, j++) {
             bitBoard <<= 9n;
             if (applyBitBoard(bitBoard)) {
                 break;
             }
         }
+        result.push(this._getFigures(steps));
 
-        return steps;
+        return result;
 
         function applyBitBoard(bitBoard) {
             // проверка, что ячейка пустая или занята фигурой другого цвета (значит в нее можно ходить)
@@ -250,46 +260,54 @@ class Board {
         }
     }
 
-    rookSteps(ceil, color ='w') {
-        let steps = 0n;
-        const col = ceil % 8;
-        const row = (ceil - col) / 8;
+    rookSteps(cell, color ='w') {
+        const result = [];
+        const col = cell % 8;
+        const row = (cell - col) / 8;
         const mask = this._stepMask(color);
         const stopMask = this._oppositeStepMask(color);
 
-        let bitBoard = this._ceilToBitBoard(ceil);
+        let steps = 0n;
+        let bitBoard = this._cellToBitBoard(cell);
         for (let i = col - 1; i >= 0; i--) {
             bitBoard >>= 1n;
             if (applyBitBoard(bitBoard)) {
                 break;
             }
         }
+        result.push(this._getFigures(steps));
 
-        bitBoard = this._ceilToBitBoard(ceil);
+        steps = 0n;
+        bitBoard = this._cellToBitBoard(cell);
         for (let i = col + 1; i <= 7; i++) {
             bitBoard <<= 1n;
             if (applyBitBoard(bitBoard)) {
                 break;
             }
         }
+        result.push(this._getFigures(steps));
 
-        bitBoard = this._ceilToBitBoard(ceil);
+        steps = 0n;
+        bitBoard = this._cellToBitBoard(cell);
         for (let i = row - 1; i >= 0; i--) {
             bitBoard >>= 8n;
             if (applyBitBoard(bitBoard)) {
                 break;
             }
         }
+        result.push(this._getFigures(steps));
 
-        bitBoard = this._ceilToBitBoard(ceil);
+        steps = 0n;
+        bitBoard = this._cellToBitBoard(cell);
         for (let i = row + 1; i <= 7; i++) {
             bitBoard <<= 8n;
             if (applyBitBoard(bitBoard)) {
                 break;
             }
         }
+        result.push(this._getFigures(steps));
 
-        return steps;
+        return result;
 
         function applyBitBoard(bitBoard) {
             if ((bitBoard & mask) !== 0n) {
@@ -302,21 +320,23 @@ class Board {
         }
     }
 
-    queensSteps(ceil, color ='w') {
-        return this.rookSteps(ceil, color) | this.bishopsSteps(ceil, color);
+    queensSteps(cell, color ='w') {
+        return this.rookSteps(cell, color).concat(this.bishopsSteps(cell, color));
     }
 
-    kingSteps(ceil, color = 'w') {
+    kingSteps(cell, color = 'w') {
         const nA = 0xFeFeFeFeFeFeFeFen;
         const nH = 0x7f7f7f7f7f7f7f7fn;
         const n9 = 0xffffffffffffffffn;
 
-        const bitBoard = this._ceilToBitBoard(ceil);
+        const bitBoard = this._cellToBitBoard(cell);
         const steps =
             nH & (bitBoard << 7n | bitBoard >> 1n | bitBoard >> 9n) |
             n9 & (bitBoard << 8n | bitBoard >> 8n) |
             nA & (bitBoard << 9n | bitBoard << 1n | bitBoard >> 7n);
-        return steps & ~this._stepMask(color);
+        const group = this._getFigures(steps & ~this._stepMask(color));
+
+        return [group];
     }
 
     // получение состояния доски
@@ -363,7 +383,7 @@ class Board {
             for (let char of line) {
                 const index = figures.indexOf(char);
                 if (index !== -1) {
-                    this[vars[index]] |= this._ceilToBitBoard(col);
+                    this[vars[index]] |= this._cellToBitBoard(col);
                     col++;
                 } else if (char >= '0' && char <= '9') {
                     col += parseInt(char, 10);
@@ -430,7 +450,7 @@ class Board {
         let skip = 0;
         for (let col = 0; col <= 7; col++) {
             const figure = this._getASCIIFigure(col, row);
-            if (this._isEmptyCeil(figure)) {
+            if (this._isEmptyCell(figure)) {
                 skip++;
             } else {
                 if (skip) {
@@ -646,18 +666,17 @@ class Board {
         const result = [];
         const figures = this[getFigures](this._color);
 
-        figures.forEach(figureCeil => {
-            const start = this._ceilToStep(figureCeil);
-            const steps = this[generateSteps](figureCeil, this._color);
-            this._getFigures(steps)
-                .forEach(ceil => {
-                    result.push(start + this._ceilToStep(ceil));
+        figures.forEach(figureCell => {
+            const start = this._cellToStep(figureCell);
+            const steps = this[generateSteps](figureCell, this._color);
+            [].concat(...steps)
+                .forEach(cell => {
+                    result.push(start + this._cellToStep(cell));
                 });
         });
 
         return result;
     }
-
 
     // получение внутреннего состояния в удобном виде
 
@@ -682,7 +701,7 @@ class Board {
         return '.';
     }
 
-    _isEmptyCeil(asciiFigure) {
+    _isEmptyCell(asciiFigure) {
         return asciiFigure === '.';
     }
 
@@ -745,13 +764,13 @@ class Board {
         return 1n << BigInt(row * 8 + col);
     }
 
-    _ceilToBitBoard(ceil) {
-        return 1n << BigInt(ceil);
+    _cellToBitBoard(cell) {
+        return 1n << BigInt(cell);
     }
 
-    _ceilToStep(ceil) {
-        const col = ceil % 8;
-        const row = (ceil - col) / 8;
+    _cellToStep(cell) {
+        const col = cell % 8;
+        const row = (cell - col) / 8;
         return this._colRowToStep(col, row);
     }
 
@@ -796,6 +815,54 @@ function stepsToList(steps) {
     return result;
 }
 
+function generateKBRQStepsTable() {
+    const result = [];
+    const board = new Board();
+
+    addForFigure('knightSteps');
+    addForFigure('bishopsSteps');
+    addForFigure('rookSteps');
+    addForFigure('queensSteps');
+
+    return result;
+
+    function addForFigure(generateSteps) {
+        // для всех ячеек доски
+        for (let ceil = 0; ceil < 64; ceil++) {
+            // все шаги для этой ячейки
+            const availableSteps = board[generateSteps](ceil);
+            // список всех возможных ходов из ячейки
+            const list = [];
+            // в каждом ходе группы ходов (ходов в одном направлении) должна быть ссылка на следующую группу
+            let prevGroupStart = null;
+            let prevGroupEnd = null;
+            availableSteps.forEach(group => {
+                // новая группа начнется с текущего интекса
+                const current = list.length;
+                // если есть предыдущая группа, надо проставить у нее ссылки
+                if (prevGroupStart) {
+                    for (let i = prevGroupStart; i < prevGroupEnd; i++) {
+                        list[i].turn = current;
+                    }
+                }
+                // запоминаем начало группы
+                prevGroupStart = current;
+                // добавляем шаги в список
+                group.forEach(step => {
+                    list.push({
+                        coord: step,
+                        turn: null
+                    });
+                });
+                // запоминаем конец группы
+                prevGroupEnd = list.length;
+            });
+            result.push(list);
+        }
+    }
+}
+
 exports.Board = Board;
 exports.bitCount = bitCount;
 exports.stepsToList = stepsToList;
+exports.generateKBRQStepsTable = generateKBRQStepsTable;

@@ -1,5 +1,5 @@
 const { readCases } = require('./testUtils');
-const { Board, stepsToList } = require('./2figures');
+const { Board, stepsToList, generateKBRQStepsTable } = require('./2figures');
 
 describe.each(readCases('./2.FIGURES/3719.2.Сортировка ходов'))
 ('2.FIGURES/3719.2.Сортировка ходов', (inPar, outPar) => {
@@ -57,5 +57,20 @@ describe.each(readCases('./2.FIGURES/3725.2.Хоровод'))
         const result = board.allKBRQSteps();
 
         expect(result).toEqual(outPar);
+    });
+});
+
+describe.each(readCases('./2.FIGURES/3726.2.Все ходы записаны'))
+('2.FIGURES/3726.2.Все ходы записаны', (inPar, outPar) => {
+    let table;
+
+    beforeAll(() => {
+        table = generateKBRQStepsTable();
+    });
+
+    it(inPar[0], () => {
+        const result = table[inPar[0]].length.toString();
+
+        expect(result).toEqual(outPar[0]);
     });
 });
