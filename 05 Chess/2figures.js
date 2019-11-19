@@ -723,5 +723,31 @@ function bitCount(bitBoard) {
     return count;
 }
 
+function stepsToList(steps) {
+    const result = [steps.length.toString()];
+
+    let group;
+    let line = [];
+    steps
+        .sort()
+        .forEach(step => {
+            const stepGroup = step.substr(0, 2);
+            if (stepGroup !== group) {
+                if (line.length > 0) {
+                    result.push(line.join(' '));
+                }
+                group = stepGroup;
+                line = [];
+            }
+            line.push(step);
+        });
+    if (line.length > 0) {
+        result.push(line.join(' '));
+    }
+
+    return result;
+}
+
 exports.Board = Board;
 exports.bitCount = bitCount;
+exports.stepsToList = stepsToList;
