@@ -49,3 +49,13 @@ describe.each(readCases('./2.FIGURES/3724.2.Ход ферзём'))
         expect(result).toEqual(outPar);
     });
 });
+
+describe.each(readCases('./2.FIGURES/3725.2.Хоровод'))
+('2.FIGURES/3725.2.Хоровод', (inPar, outPar) => {
+    it(inPar[0], () => {
+        const board = new Board().fromFEN(inPar[0]);
+        const result = board.allKBRQSteps();
+
+        expect(result).toEqual(outPar);
+    });
+});

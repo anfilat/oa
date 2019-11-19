@@ -159,19 +159,26 @@ class Board {
     // генерация возможных ходов
 
     allKnightSteps() {
-        return this._allSteps('getKnights', 'knightSteps');
+        return stepsToList(this._allSteps('getKnights', 'knightSteps'));
     }
 
     allBishopsSteps() {
-        return this._allSteps('getBishops', 'bishopsSteps');
+        return stepsToList(this._allSteps('getBishops', 'bishopsSteps'));
     }
 
     allRooksSteps() {
-        return this._allSteps('getRooks', 'rookSteps');
+        return stepsToList(this._allSteps('getRooks', 'rookSteps'));
     }
 
     allQueensSteps() {
-        return this._allSteps('getQueens', 'queensSteps');
+        return stepsToList(this._allSteps('getQueens', 'queensSteps'));
+    }
+
+    allKBRQSteps() {
+        return stepsToList(this._allSteps('getKnights', 'knightSteps')
+            .concat(this._allSteps('getBishops', 'bishopsSteps'))
+            .concat(this._allSteps('getRooks', 'rookSteps'))
+            .concat(this._allSteps('getQueens', 'queensSteps')));
     }
 
     knightSteps(ceil, color = 'w') {
@@ -648,7 +655,7 @@ class Board {
                 });
         });
 
-        return stepsToList(result);
+        return result;
     }
 
 
