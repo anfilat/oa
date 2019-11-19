@@ -98,12 +98,18 @@ class Board {
         const figureVar = this._getFigureVar(startCol, startRow);
 
         // на каком bitBoard берется фигура
-        let takeFigureVar;
+        let takeFigureVar = null;
         // где
         let takeCol;
         let takeRow;
 
-        if (this._isTakeOnPass(figureVar, step)) {
+        if (this._isCastling(step)) {
+            // рокировка
+            this._castling(step);
+
+            // правка хода пешки на два поля
+            this._clearPawnOnPass();
+        } else if (this._isTakeOnPass(figureVar, step)) {
             // перемещение фигуры
             this._moveFigure(figureVar, startCol, startRow, endCol, endRow);
 
@@ -120,6 +126,7 @@ class Board {
                 this._promotionPawn(figureVar, startCol, startRow, endCol, endRow, promotion);
             } else {
                 this._moveFigure(figureVar, startCol, startRow, endCol, endRow);
+                this._checkCastlingFlagsOnMove(figureVar, startCol, startRow);
             }
 
             // правка хода пешки на два поля
@@ -130,7 +137,10 @@ class Board {
             takeCol = endCol;
             takeRow = endRow;
         }
-        this._takeFigure(takeFigureVar, takeCol, takeRow);
+        if (takeFigureVar) {
+            this._takeFigure(takeFigureVar, takeCol, takeRow);
+            this._checkCastlingFlagsOnTake(takeFigureVar, takeCol, takeRow);
+        }
         this._calcWhitesAndBlacksBB();
         this._changeHalfSteps(figureVar, takeFigureVar);
         this._changeTurn();
@@ -424,6 +434,41 @@ class Board {
 
     // изменение внутреннего состояния
 
+    // проверка, что код - рокировка
+    _isCastling(step) {
+        if (this._color === 'w') {
+            return this._castlingWhiteShort && step === 'e1g1' ||
+                this._castlingWhiteLong && step === 'e1c1';
+        } else {
+            return this._castlingBlackShort && step === 'e8g8' ||
+                this._castlingBlackLong && step === 'e8c8';
+        }
+    }
+
+    _castling(step) {
+        if (step === 'e1g1') {
+            this._moveFigure('_whiteKing', 4, 0, 6, 0);
+            this._moveFigure('_whiteRooks', 7, 0, 5, 0);
+            this._castlingWhiteShort = false;
+            this._castlingWhiteLong = false;
+        } else if (step === 'e1c1') {
+            this._moveFigure('_whiteKing', 4, 0, 2, 0);
+            this._moveFigure('_whiteRooks', 0, 0, 3, 0);
+            this._castlingWhiteShort = false;
+            this._castlingWhiteLong = false;
+        } else if (step === 'e8g8') {
+            this._moveFigure('_blackKing', 4, 7, 6, 7);
+            this._moveFigure('_blackRooks', 7, 7, 5, 7);
+            this._castlingBlackShort = false;
+            this._castlingBlackLong = false;
+        } else {
+            this._moveFigure('_blackKing', 4, 7, 2, 7);
+            this._moveFigure('_blackRooks', 0, 7, 3, 7);
+            this._castlingBlackShort = false;
+            this._castlingBlackLong = false;
+        }
+    }
+
     // переставляем фигуру
     _moveFigure(figureVar, startCol, startRow, endCol, endRow) {
         const startMask = this._colRowToBitBoard(startCol, startRow);
@@ -431,8 +476,30 @@ class Board {
 
         this[figureVar] &= ~startMask;
         this[figureVar] |= endMask;
+    }
 
-        // чистим флаги рокировки
+    // превращение пешки
+    _promotionPawn(figureVar, startCol, startRow, endCol, endRow, promotion) {
+        const startMask = this._colRowToBitBoard(startCol, startRow);
+        const endMask = this._colRowToBitBoard(endCol, endRow);
+
+        // снимаем пешку
+        this[figureVar] &= ~startMask;
+        // находим переменную с bitBoard для новой фигуры
+        const index = figures.indexOf(promotion);
+        // добавляем новую фигуру
+        this[vars[index]] |= endMask;
+    }
+
+    // снимаем фигуру
+    _takeFigure(takeFigureVar, col, row) {
+        const mask = this._colRowToBitBoard(col, row);
+
+        this[takeFigureVar] &= ~mask;
+    }
+
+    // чистим флаги рокировки
+    _checkCastlingFlagsOnMove(figureVar, startCol, startRow) {
         if (this._color === 'w') {
             if (startRow === 0) {
                 if (figureVar === '_whiteRooks') {
@@ -466,42 +533,22 @@ class Board {
         }
     }
 
-    // превращение пешки
-    _promotionPawn(figureVar, startCol, startRow, endCol, endRow, promotion) {
-        const startMask = this._colRowToBitBoard(startCol, startRow);
-        const endMask = this._colRowToBitBoard(endCol, endRow);
-
-        // снимаем пешку
-        this[figureVar] &= ~startMask;
-        // находим переменную с bitBoard для новой фигуры
-        const index = figures.indexOf(promotion);
-        // добавляем новую фигуру
-        this[vars[index]] |= endMask;
-    }
-
-    // снимаем фигуру
-    _takeFigure(endCeilFigureVar, col, row) {
-        if (endCeilFigureVar) {
-            const mask = this._colRowToBitBoard(col, row);
-
-            this[endCeilFigureVar] &= ~mask;
-
-            // чистим флаги рокировки
-            if (this._color === 'w') {
-                if (row === 7 && endCeilFigureVar === '_blackRooks') {
-                    if (col === 0) {
-                        this._castlingBlackLong = false;
-                    } else if (col === 7) {
-                        this._castlingBlackShort = false;
-                    }
+    // чистим флаги рокировки
+    _checkCastlingFlagsOnTake(takeFigureVar, col, row) {
+        if (this._color === 'w') {
+            if (row === 7 && takeFigureVar === '_blackRooks') {
+                if (col === 0) {
+                    this._castlingBlackLong = false;
+                } else if (col === 7) {
+                    this._castlingBlackShort = false;
                 }
-            } else {
-                if (row === 0 && endCeilFigureVar === '_whiteRooks') {
-                    if (col === 0) {
-                        this._castlingWhiteLong = false;
-                    } else if (col === 7) {
-                        this._castlingWhiteShort = false;
-                    }
+            }
+        } else {
+            if (row === 0 && takeFigureVar === '_whiteRooks') {
+                if (col === 0) {
+                    this._castlingWhiteLong = false;
+                } else if (col === 7) {
+                    this._castlingWhiteShort = false;
                 }
             }
         }
@@ -537,8 +584,8 @@ class Board {
         this._pawnOnPass = '-';
     }
 
-    _changeHalfSteps(figureVar, endCeilFigureVar) {
-        if (this._isPawn(figureVar) || endCeilFigureVar) {
+    _changeHalfSteps(figureVar, takeFigureVar) {
+        if (this._isPawn(figureVar) || takeFigureVar) {
             this._halfSteps = 0;
         } else {
             this._halfSteps++;

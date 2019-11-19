@@ -86,3 +86,14 @@ describe.each(readCases('./1.FEN/3715.1.Королевские флаги'))
         expect(result).toEqual(outPar[0]);
     });
 });
+
+describe.each(readCases('./1.FEN/3716.1.Рокировка'))
+('1.FEN/3716.1.Рокировка', (inPar, outPar) => {
+    it(`${inPar[0]} ${inPar[1]}`, () => {
+        const board = new Board().fromFEN(inPar[0]);
+        board.doStep(inPar[1]);
+        const result = board.toFEN();
+
+        expect(result).toEqual(outPar[0]);
+    });
+});
