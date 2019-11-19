@@ -170,6 +170,10 @@ class Board {
         return this._allSteps('getRooks', 'rookSteps');
     }
 
+    allQueensSteps() {
+        return this._allSteps('getQueens', 'queensSteps');
+    }
+
     knightSteps(ceil, color = 'w') {
         const nA = 0xFeFeFeFeFeFeFeFen;
         const nAB = 0xFcFcFcFcFcFcFcFcn;

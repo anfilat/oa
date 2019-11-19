@@ -39,3 +39,13 @@ describe.each(readCases('./2.FIGURES/3723.2.Ход ладьёй'))
         expect(result).toEqual(outPar);
     });
 });
+
+describe.each(readCases('./2.FIGURES/3724.2.Ход ферзём'))
+('2.FIGURES/3724.2.Ход ферзём', (inPar, outPar) => {
+    it(inPar[0], () => {
+        const board = new Board().fromFEN(inPar[0]);
+        const result = board.allQueensSteps();
+
+        expect(result).toEqual(outPar);
+    });
+});
