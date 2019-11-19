@@ -166,6 +166,10 @@ class Board {
         return this._allSteps('getBishops', 'bishopsSteps');
     }
 
+    allRooksSteps() {
+        return this._allSteps('getRooks', 'rookSteps');
+    }
+
     knightSteps(ceil, color = 'w') {
         const nA = 0xFeFeFeFeFeFeFeFen;
         const nAB = 0xFcFcFcFcFcFcFcFcn;

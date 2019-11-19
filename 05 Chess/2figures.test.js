@@ -29,3 +29,13 @@ describe.each(readCases('./2.FIGURES/3722.2.Ход слоном'))
         expect(result).toEqual(outPar);
     });
 });
+
+describe.each(readCases('./2.FIGURES/3723.2.Ход ладьёй'))
+('2.FIGURES/3723.2.Ход ладьёй', (inPar, outPar) => {
+    it(inPar[0], () => {
+        const board = new Board().fromFEN(inPar[0]);
+        const result = board.allRooksSteps();
+
+        expect(result).toEqual(outPar);
+    });
+});
