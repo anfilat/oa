@@ -22,8 +22,11 @@ class Board {
     _whites = 0n;
     _blacks = 0n;
 
-    _nextStep;
-    _castling;
+    _color;
+    _castlingWhiteShort = false;
+    _castlingWhiteLong = false;
+    _castlingBlackShort = false;
+    _castlingBlackLong = false;
     _pawnOnPass;
     _halfSteps;
     _stepNum;
@@ -34,11 +37,11 @@ class Board {
         const fenParts = this._splitFenToParts(fen);
 
         this._parseFENBoard(fenParts[0]);
-        this._nextStep = this._parseNextStep(fenParts[1]);
-        this._castling = this._parseCastling(fenParts[2]);
-        this._pawnOnPass = fenParts[3];
-        this._halfSteps = this._parseHalfStep(fenParts[4]);
-        this._stepNum = this._parseStepNum(fenParts[5]);
+        this._parseColor(fenParts[1]);
+        this._parseCastling(fenParts[2]);
+        this._parsePawnOnPass(fenParts[3]);
+        this._parseHalfStep(fenParts[4]);
+        this._parseStepNum(fenParts[5]);
 
         return this;
     }
@@ -83,7 +86,7 @@ class Board {
     }
 
     toFEN() {
-        return `${this._figuresToFEN()} ${this._nextStep} ${this._castling} ${this._pawnOnPass} ${this._halfSteps} ${this._stepNum}`
+        return `${this._figuresToFEN()} ${this._color} ${this._castlingToFEN()} ${this._pawnOnPass} ${this._halfSteps} ${this._stepNum}`
     }
 
     // выполнение хода
@@ -339,27 +342,27 @@ class Board {
         this._calcWhitesAndBlacksBB();
     }
 
-    _parseNextStep(str) {
-        return str.toLowerCase();
+    _parseColor(str) {
+        this._color = str.toLowerCase();
     }
 
     _parseCastling(str) {
-        if (str === '-') {
-            return '-';
-        }
-        return '' +
-            (str.includes('K') ? 'K' : '') +
-            (str.includes('Q') ? 'Q' : '') +
-            (str.includes('k') ? 'k' : '') +
-            (str.includes('q') ? 'q' : '');
+        this._castlingWhiteShort = str.includes('K');
+        this._castlingWhiteLong = str.includes('Q');
+        this._castlingBlackShort = str.includes('k');
+        this._castlingBlackLong = str.includes('q');
+    }
+
+    _parsePawnOnPass(str) {
+        this._pawnOnPass = str;
     }
 
     _parseHalfStep(str) {
-        return parseInt(str, 10);
+        this._halfSteps = parseInt(str, 10);
     }
 
     _parseStepNum(str) {
-        return parseInt(str, 10);
+        this._stepNum = parseInt(str, 10);
     }
 
     _parseStep(step) {
@@ -410,6 +413,102 @@ class Board {
         }
 
         return line;
+    }
+
+    _castlingToFEN() {
+        return ((this._castlingWhiteShort ? 'K' : '') +
+            (this._castlingWhiteLong ? 'Q' : '') +
+            (this._castlingBlackShort ? 'k' : '') +
+            (this._castlingBlackLong ? 'q' : '')) ||
+            '-';
+    }
+
+    // изменение внутреннего состояния
+
+    // переставляем фигуру
+    _moveFigure(figureVar, startMask, endMask) {
+        this[figureVar] &= ~startMask;
+        this[figureVar] |= endMask;
+    }
+
+    // превращение пешки
+    _promotionPawn(figureVar, startMask, endMask, promotion) {
+        // снимаем пешку
+        this[figureVar] &= ~startMask;
+        // находим переменную с bitBoard для новой фигуры
+        const index = figures.indexOf(promotion);
+        // добавляем новую фигуру
+        this[vars[index]] |= endMask;
+    }
+
+    // снимаем фигуру
+    _takeFigure(endCeilFigureVar, endMask) {
+        if (endCeilFigureVar) {
+            this[endCeilFigureVar] &= ~endMask;
+        }
+    }
+
+    // ход - взятие пешки на проходе
+    _isTakeOnPass(figureVar, step) {
+        return this._isPawn(figureVar) && step.substr(2, 2) === this._pawnOnPass;
+    }
+
+    _changePawnOnPass(figureVar, startCol, startRow, endRow) {
+        if (this._isPawnJump(figureVar, startCol, startRow, endRow)) {
+            this._pawnOnPass = this._colRowToStep(startCol, (startRow + endRow) >> 1);
+        } else {
+            this._clearPawnOnPass();
+        }
+    }
+
+    // надо ли сохранить поле для взятия пешки на проходе
+    _isPawnJump(figureVar, startCol, startRow, endRow) {
+        if (!this._isPawn(figureVar)) {
+            return false;
+        }
+        if (Math.abs(startRow - endRow) !== 2) {
+            return false;
+        }
+        const oppositePawns = this._color === 'w' ? this._blackPawns : this._whitePawns;
+        return (startCol > 0 && this._isFigureInColRow(oppositePawns, startCol - 1, endRow)) ||
+            (startCol < 7 && this._isFigureInColRow(oppositePawns, startCol + 1, endRow));
+    }
+
+    _clearPawnOnPass() {
+        this._pawnOnPass = '-';
+    }
+
+    _changeHalfSteps(figureVar, endCeilFigureVar) {
+        if (this._isPawn(figureVar) || endCeilFigureVar) {
+            this._halfSteps = 0;
+        } else {
+            this._halfSteps++;
+        }
+    }
+
+    _changeTurn() {
+        if (this._color === 'w') {
+            this._color = 'b';
+        } else {
+            this._color = 'w';
+            this._stepNum++;
+        }
+    }
+
+    // подсчет вспомогательной маски всех белых фигур
+    _calcWhitesAndBlacksBB() {
+        this._whites = this._whitePawns |
+            this._whiteKnights |
+            this._whiteBishops |
+            this._whiteRooks |
+            this._whiteQueens |
+            this._whiteKing;
+        this._blacks = this._blackPawns |
+            this._blackKnights |
+            this._blackBishops |
+            this._blackRooks |
+            this._blackQueens |
+            this._blackKing;
     }
 
     // получение внутреннего состояния в удобном виде
@@ -464,6 +563,10 @@ class Board {
         return figureVar === '_whitePawns' || figureVar === '_blackPawns';
     }
 
+    _isFigureInColRow(bitBoard, col, row) {
+        return (bitBoard & this._colRowToBitBoard(col, row)) !== 0n;
+    }
+
     // прочие методы получения внутреннего состояния в удобном виде
 
     // маска для проверки - можно ли ходить в эту клетку
@@ -486,94 +589,6 @@ class Board {
             bitBoard >>= 1n;
         }
         return result;
-    }
-
-    // изменение внутреннего состояния
-
-    // переставляем фигуру
-    _moveFigure(figureVar, startMask, endMask) {
-        this[figureVar] &= ~startMask;
-        this[figureVar] |= endMask;
-    }
-
-    // превращение пешки
-    _promotionPawn(figureVar, startMask, endMask, promotion) {
-        // снимаем пешку
-        this[figureVar] &= ~startMask;
-        // находим переменную с bitBoard для новой фигуры
-        const index = figures.indexOf(promotion);
-        // добавляем новую фигуру
-        this[vars[index]] |= endMask;
-    }
-
-    // снимаем фигуру
-    _takeFigure(endCeilFigureVar, endMask) {
-        if (endCeilFigureVar) {
-            this[endCeilFigureVar] &= ~endMask;
-        }
-    }
-
-    // ход - взятие пешки на проходе
-    _isTakeOnPass(figureVar, step) {
-        return this._isPawn(figureVar) && step.substr(2, 2) === this._pawnOnPass;
-    }
-
-    _changePawnOnPass(figureVar, startCol, startRow, endRow) {
-        if (this._isPawnJump(figureVar, startCol, startRow, endRow)) {
-            this._pawnOnPass = this._colRowToStep(startCol, (startRow + endRow) >> 1);
-        } else {
-            this._clearPawnOnPass();
-        }
-    }
-
-    // надо ли сохранить поле для взятия пешки на проходе
-    _isPawnJump(figureVar, startCol, startRow, endRow) {
-        if (!this._isPawn(figureVar)) {
-            return false;
-        }
-        if (Math.abs(startRow - endRow) !== 2) {
-            return false;
-        }
-        const oppositePawns = this._nextStep === 'w' ? this._blackPawns : this._whitePawns;
-        return (startCol > 0 && ((oppositePawns & this._colRowToBitBoard(startCol - 1, endRow)) !== 0n)) ||
-            (startCol < 7 && ((oppositePawns & this._colRowToBitBoard(startCol + 1, endRow)) !== 0n));
-    }
-
-    _clearPawnOnPass() {
-        this._pawnOnPass = '-';
-    }
-
-    _changeHalfSteps(figureVar, endCeilFigureVar) {
-        if (this._isPawn(figureVar) || endCeilFigureVar) {
-            this._halfSteps = 0;
-        } else {
-            this._halfSteps++;
-        }
-    }
-
-    _changeTurn() {
-        if (this._nextStep === 'w') {
-            this._nextStep = 'b';
-        } else {
-            this._nextStep = 'w';
-            this._stepNum++;
-        }
-    }
-
-    // подсчет вспомогательной маски всех белых фигур
-    _calcWhitesAndBlacksBB() {
-        this._whites = this._whitePawns |
-            this._whiteKnights |
-            this._whiteBishops |
-            this._whiteRooks |
-            this._whiteQueens |
-            this._whiteKing;
-        this._blacks = this._blackPawns |
-            this._blackKnights |
-            this._blackBishops |
-            this._blackRooks |
-            this._blackQueens |
-            this._blackKing;
     }
 
     // преобразования между форматами
