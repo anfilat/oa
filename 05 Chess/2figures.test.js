@@ -9,3 +9,13 @@ describe.each(readCases('./2.FIGURES/3719.2.Сортировка ходов'))
         expect(result).toEqual(outPar);
     });
 });
+
+describe.each(readCases('./2.FIGURES/3721.2.Ход конём'))
+('2.FIGURES/3721.2.Ход конём', (inPar, outPar) => {
+    it(inPar[0], () => {
+        const board = new Board().fromFEN(inPar[0]);
+        const result = board.allKnightSteps();
+
+        expect(result).toEqual(outPar);
+    });
+});

@@ -158,6 +158,22 @@ class Board {
 
     // генерация возможных ходов
 
+    allKnightSteps() {
+        const result = [];
+        const figures = this.getKnights(this._color);
+
+        figures.forEach(figureCeil => {
+            const start = this._ceilToStep(figureCeil);
+            const steps = this.knightSteps(figureCeil, this._color);
+            this._getFigures(steps)
+                .forEach(ceil => {
+                    result.push(start + this._ceilToStep(ceil));
+                });
+        });
+
+        return stepsToList(result);
+    }
+
     knightSteps(ceil, color = 'w') {
         const nA = 0xFeFeFeFeFeFeFeFen;
         const nAB = 0xFcFcFcFcFcFcFcFcn;
@@ -303,7 +319,7 @@ class Board {
     }
 
     getKnights(color = 'w') {
-        return this._getFigures(color === 'w' ? this._whiteKnights : this._blackPawns);
+        return this._getFigures(color === 'w' ? this._whiteKnights : this._blackKnights);
     }
 
     getBishops(color = 'w') {
@@ -705,6 +721,12 @@ class Board {
 
     _ceilToBitBoard(ceil) {
         return 1n << BigInt(ceil);
+    }
+
+    _ceilToStep(ceil) {
+        const col = ceil % 8;
+        const row = (ceil - col) / 8;
+        return this._colRowToStep(col, row);
     }
 
     _colRowToStep(col, row) {
