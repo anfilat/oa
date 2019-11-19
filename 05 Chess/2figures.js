@@ -159,19 +159,11 @@ class Board {
     // генерация возможных ходов
 
     allKnightSteps() {
-        const result = [];
-        const figures = this.getKnights(this._color);
+        return this._allSteps('getKnights', 'knightSteps');
+    }
 
-        figures.forEach(figureCeil => {
-            const start = this._ceilToStep(figureCeil);
-            const steps = this.knightSteps(figureCeil, this._color);
-            this._getFigures(steps)
-                .forEach(ceil => {
-                    result.push(start + this._ceilToStep(ceil));
-                });
-        });
-
-        return stepsToList(result);
+    allBishopsSteps() {
+        return this._allSteps('getBishops', 'bishopsSteps');
     }
 
     knightSteps(ceil, color = 'w') {
@@ -632,6 +624,25 @@ class Board {
             this._blackQueens |
             this._blackKing;
     }
+
+    // генерация возможных ходов (вспомогательные методы)
+
+    _allSteps(getFigures, generateSteps) {
+        const result = [];
+        const figures = this[getFigures](this._color);
+
+        figures.forEach(figureCeil => {
+            const start = this._ceilToStep(figureCeil);
+            const steps = this[generateSteps](figureCeil, this._color);
+            this._getFigures(steps)
+                .forEach(ceil => {
+                    result.push(start + this._ceilToStep(ceil));
+                });
+        });
+
+        return stepsToList(result);
+    }
+
 
     // получение внутреннего состояния в удобном виде
 

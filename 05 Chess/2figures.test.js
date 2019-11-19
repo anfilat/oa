@@ -19,3 +19,13 @@ describe.each(readCases('./2.FIGURES/3721.2.Ход конём'))
         expect(result).toEqual(outPar);
     });
 });
+
+describe.each(readCases('./2.FIGURES/3722.2.Ход слоном'))
+('2.FIGURES/3722.2.Ход слоном', (inPar, outPar) => {
+    it(inPar[0], () => {
+        const board = new Board().fromFEN(inPar[0]);
+        const result = board.allBishopsSteps();
+
+        expect(result).toEqual(outPar);
+    });
+});
