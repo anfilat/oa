@@ -1,0 +1,16 @@
+{
+  "name": "07-heap",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "test": "jest",
+    "bench:dynamic": "node --expose-gc bench.dynamic.js",
+    "bench:typed": "node --expose-gc bench.typed.js",
+    "bench": "npm run bench:dynamic && npm run bench:typed"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^24.9.0"
+  }
+}
