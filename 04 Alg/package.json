@@ -1,0 +1,16 @@
+{
+  "name": "04-alg",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "test": "jest",
+    "bench:gcd": "node gcd.bench.js",
+    "bench": "npm run bench:gcd"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "benchmark": "^2.1.4",
+    "jest": "^24.9.0"
+  }
+}
