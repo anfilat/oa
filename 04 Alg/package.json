@@ -5,7 +5,8 @@
   "scripts": {
     "test": "jest",
     "bench:gcd": "node gcd.bench.js",
-    "bench": "npm run bench:gcd"
+    "bench:fib": "node fib.bench.js",
+    "bench": "npm run bench:gcd && npm run bench:fib"
   },
   "author": "",
   "license": "ISC",
