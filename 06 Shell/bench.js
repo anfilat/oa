@@ -6,7 +6,7 @@ const size = 5000000;
 let arr;
 const random = randomArray(size);
 
-arr = random.slice().sort();
+arr = random.slice().sort((a, b) => a - b);
 const sorted10p = arr.slice();
 shuffle(sorted10p, size / 10);
 
@@ -47,11 +47,11 @@ console.log('TokudaGaps sorted5', bench(() => shell(arr, TokudaGaps)));
 global.gc();
 
 arr = random.slice();
-console.log('system random', bench(() => arr.sort()));
+console.log('system random', bench(() => arr.sort((a, b) => a - b)));
 arr = sorted10p.slice();
-console.log('system sorted10p', bench(() => arr.sort()));
+console.log('system sorted10p', bench(() => arr.sort((a, b) => a - b)));
 arr = sorted5.slice();
-console.log('system sorted5', bench(() => arr.sort()));
+console.log('system sorted5', bench(() => arr.sort((a, b) => a - b)));
 global.gc();
 
 const typedFloatRandom = randomTypedFloatArray(size);

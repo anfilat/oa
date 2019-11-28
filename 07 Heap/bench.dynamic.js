@@ -14,7 +14,7 @@ function benchWithSize(size) {
     let arr;
     const random = randomArray(size);
 
-    arr = random.slice().sort();
+    arr = random.slice().sort((a, b) => a - b);
     const sorted5p = arr.slice();
     shuffle(sorted5p, size / 20);
 
@@ -31,9 +31,9 @@ function benchWithSize(size) {
     global.gc();
 
     arr = random.slice();
-    console.log('system random', bench(() => arr.sort()));
+    console.log('system random', bench(() => arr.sort((a, b) => a - b)));
     arr = sorted5p.slice();
-    console.log('system sorted5p', bench(() => arr.sort()));
+    console.log('system sorted5p', bench(() => arr.sort((a, b) => a - b)));
     global.gc();
 }
 
