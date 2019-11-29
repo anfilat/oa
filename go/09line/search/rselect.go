@@ -8,35 +8,54 @@ func RSelect(array []float64, k int) float64 {
 }
 
 func rSelect(array []float64, k int) float64 {
-	if len(array) == 1 {
-		return array[0]
-	}
+	for {
+		if len(array) == 1 {
+			return array[0]
+		}
 
-	pivotIndex := rand.Intn(len(array))
-	pivotIndex = rPartition(array, pivotIndex)
+		pivotIndex := rand.Intn(len(array))
+		pivotIndex = rPartition(array, pivotIndex, k)
 
-	if pivotIndex == k {
-		return array[pivotIndex]
-	} else if pivotIndex > k {
-		return rSelect(array[:pivotIndex], k)
-	} else {
-		return rSelect(array[pivotIndex+1:], k-pivotIndex-1)
+		if pivotIndex == k {
+			return array[pivotIndex]
+		} else if pivotIndex > k {
+			array = array[:pivotIndex]
+		} else {
+			array = array[pivotIndex+1:]
+			k -= pivotIndex + 1
+		}
 	}
 }
 
-func rPartition(array []float64, pivotIndex int) int {
-	array[0], array[pivotIndex] = array[pivotIndex], array[0]
+func rPartition(array []float64, pivotIndex int, k int) int {
+	pivotValue := array[pivotIndex]
+	right := len(array) - 1
 
-	p := array[0]
-	i := 1
-	for j := 1; j < len(array); j++ {
-		if array[j] < p {
-			array[i], array[j] = array[j], array[i]
-			i++
+	array[pivotIndex], array[right] = array[right], array[pivotIndex]
+
+	storeIndex := 0
+	for i := 0; i < right; i++ {
+		if array[i] < pivotValue {
+			array[storeIndex], array[i] = array[i], array[storeIndex]
+			storeIndex++
 		}
 	}
 
-	array[0], array[i-1] = array[i-1], array[0]
+	storeIndexEq := storeIndex
+	for i := storeIndex; i < right; i++ {
+		if array[i] == pivotValue {
+			array[storeIndexEq], array[i] = array[i], array[storeIndexEq]
+			storeIndexEq++
+		}
+	}
 
-	return i - 1
+	array[right], array[storeIndexEq] = array[storeIndexEq], array[right]
+
+	if k < storeIndex {
+		return storeIndex
+	}
+	if k <= storeIndexEq {
+		return k
+	}
+	return storeIndexEq
 }

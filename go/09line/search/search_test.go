@@ -40,13 +40,13 @@ func TestDSelect(t *testing.T) {
 }
 
 func TestBench(t *testing.T) {
-	benchWithSize(10)
-	benchWithSize(1_000)
-	benchWithSize(1_000_000)
-	benchWithSize(100_000_000)
+	benchWithSize(10, 3)
+	benchWithSize(1_000, 333)
+	benchWithSize(1_000_000, 333_333)
+	benchWithSize(100_000_000, 33_333_333)
 }
 
-func benchWithSize(size int) {
+func benchWithSize(size int, k int) {
 	fmt.Println(size)
 
 	data := testutils.RandomArray(size)
@@ -57,13 +57,13 @@ func benchWithSize(size int) {
 	fmt.Printf("select min   random %s\n", testutils.Bench(func() { SelectMin(array) }))
 
 	copy(array, data)
-	fmt.Printf("RSelect   random %s\n", testutils.Bench(func() { RSelect(array, 7) }))
+	fmt.Printf("RSelect   random %s\n", testutils.Bench(func() { RSelect(array, k) }))
 
 	copy(array, data)
-	fmt.Printf("DSelect   random %s\n", testutils.Bench(func() { DSelect(array, 7) }))
+	fmt.Printf("DSelect   random %s\n", testutils.Bench(func() { DSelect(array, k) }))
 
 	copy(array, data)
-	fmt.Printf("sort   random %s\n", testutils.Bench(func() { SelectBySort(array, 7) }))
+	fmt.Printf("sort   random %s\n", testutils.Bench(func() { SelectBySort(array, k) }))
 
 	runtime.GC()
 }

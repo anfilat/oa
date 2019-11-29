@@ -1,39 +1,39 @@
 ##10
 
-select min   random 116ns
+select min   random 110ns
 
-RSelect   random 277ns
+RSelect   random 449ns
 
-DSelect   random 587ns
+DSelect   random 562ns
 
-sort   random 1.221µs
+sort   random 760ns
 
 ##1000
 
-select min   random 780ns
+select min   random 1.24µs
 
-RSelect   random 8.062µs
+RSelect   random 13.227µs
 
-DSelect   random 37.615µs
+DSelect   random 40.85µs
 
-sort   random 100.086µs
+sort   random 115.772µs
 
 ##1000000
 
-select min   random 754.643µs
+select min   random 694.737µs
 
-RSelect   random 3.832534ms
+RSelect   random 9.271207ms
 
-DSelect   random 32.077531ms
+DSelect   random 32.251499ms
 
-sort   random 170.715631ms
+sort   random 181.842803ms
 
 ##100000000
 
-select min   random 68.544053ms
+select min   random 71.882098ms
 
-RSelect   random 321.775881ms
+RSelect   random 1.182823149s
 
-DSelect   random 3.074861111s
+DSelect   random 3.333383976s
 
-sort   random 22.583948984s
+sort   random 24.840661046s

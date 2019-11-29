@@ -9,18 +9,18 @@ func DSelect(array []float64, k int) float64 {
 	return array[dSelect(array, 0, len(array)-1, k-1)]
 }
 
-func dSelect(list []float64, left int, right int, n int) int {
+func dSelect(list []float64, left int, right int, k int) int {
 	for {
 		if left == right {
 			return left
 		}
 
 		pivotIndex := dPivot(list, left, right)
-		pivotIndex = dPartition(list, left, right, pivotIndex, n)
+		pivotIndex = dPartition(list, left, right, pivotIndex, k)
 
-		if n == pivotIndex {
-			return n
-		} else if n < pivotIndex {
+		if k == pivotIndex {
+			return k
+		} else if k < pivotIndex {
 			right = pivotIndex - 1
 		} else {
 			left = pivotIndex + 1
@@ -29,7 +29,7 @@ func dSelect(list []float64, left int, right int, n int) int {
 }
 
 // three-way partition
-func dPartition(list []float64, left int, right int, pivotIndex int, n int) int {
+func dPartition(list []float64, left int, right int, pivotIndex int, k int) int {
 	pivotValue := list[pivotIndex]
 	list[pivotIndex], list[right] = list[right], list[pivotIndex] // Move pivot to end
 	storeIndex := left
@@ -49,14 +49,14 @@ func dPartition(list []float64, left int, right int, pivotIndex int, n int) int 
 		}
 	}
 	list[right], list[storeIndexEq] = list[storeIndexEq], list[right] // Move pivot to its final place
-	//Return location of pivot considering the desired location n
-	if n < storeIndex {
-		return storeIndex // n is in the group of smaller elements
+	//Return location of pivot considering the desired location k
+	if k < storeIndex {
+		return storeIndex // k is in the group of smaller elements
 	}
-	if n <= storeIndexEq {
-		return n // n is in the group equal to pivot
+	if k <= storeIndexEq {
+		return k // k is in the group equal to pivot
 	}
-	return storeIndexEq // n is in the group of larger elements
+	return storeIndexEq // k is in the group of larger elements
 }
 
 func dPivot(list []float64, left int, right int) int {
