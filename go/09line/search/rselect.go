@@ -1,6 +1,8 @@
 package search
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 // статистики считаются от 1, а элементы массива с 0. Приводим первое ко второму
 func RSelect(array []float64, k int) float64 {
@@ -34,28 +36,29 @@ func rPartition(array []float64, pivotIndex int, k int) int {
 	array[pivotIndex], array[right] = array[right], array[pivotIndex]
 
 	storeIndex := 0
-	for i := 0; i < right; i++ {
-		if array[i] < pivotValue {
-			array[storeIndex], array[i] = array[i], array[storeIndex]
+	storeIndexEq := right - 1
+	for i := 0; i <= storeIndexEq; i++ {
+		val := array[i]
+		if val < pivotValue {
+			array[storeIndex], array[i] = val, array[storeIndex]
 			storeIndex++
+		} else if val == pivotValue {
+			array[storeIndexEq], array[i] = val, array[storeIndexEq]
+			storeIndexEq--
 		}
 	}
 
-	storeIndexEq := storeIndex
-	for i := storeIndex; i < right; i++ {
-		if array[i] == pivotValue {
-			array[storeIndexEq], array[i] = array[i], array[storeIndexEq]
-			storeIndexEq++
-		}
+	indexEq := storeIndex
+	for i := storeIndexEq + 1; i <= right; i++ {
+		array[indexEq], array[i] = array[i], array[indexEq]
+		indexEq++
 	}
-
-	array[right], array[storeIndexEq] = array[storeIndexEq], array[right]
 
 	if k < storeIndex {
 		return storeIndex
 	}
-	if k <= storeIndexEq {
+	if k <= indexEq {
 		return k
 	}
-	return storeIndexEq
+	return indexEq
 }
