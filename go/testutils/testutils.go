@@ -23,6 +23,15 @@ func RandomArray(n int) []float64 {
 	return data
 }
 
+func ConstantArray(n int, value float64) []float64 {
+	data := make([]float64, n)
+	for i := 0; i < len(data); i++ {
+		data[i] = value
+	}
+
+	return data
+}
+
 func Shuffle(arr []float64, n int) {
 	randomSource := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(randomSource)
