@@ -1,5 +1,5 @@
 const {heap} = require('./heap');
-const {randomArray, sortedArray, reversedArray} = require('../06 Shell/testUtils');
+const {randomArray, sortedArray, reversedArray} = require('testUtils');
 
 describe('heap', () => {
     it('random', () => {

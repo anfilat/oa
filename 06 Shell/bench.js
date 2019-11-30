@@ -1,5 +1,5 @@
 const {shell, ShellGaps, KnuthGaps, SedgewickGaps, TokudaGaps} = require('./shell');
-const { randomArray, randomTypedFloatArray, randomTypedIntArray, shuffle } = require('./testUtils');
+const { randomArray, randomTypedFloatArray, randomTypedIntArray, shuffle } = require('testUtils');
 
 const size = 5000000;
 

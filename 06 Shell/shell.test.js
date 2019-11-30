@@ -1,5 +1,5 @@
 const {shell, ShellGaps, KnuthGaps, SedgewickGaps, TokudaGaps} = require('./shell');
-const {randomArray, sortedArray, reversedArray} = require('./testUtils');
+const {randomArray, sortedArray, reversedArray} = require('testUtils');
 
 describe.each([
     ['ShellGaps', ShellGaps],

@@ -1,6 +1,6 @@
 const {shell, TokudaGaps} = require('../06 Shell/shell');
 const {heap} = require('./heap');
-const { randomArray, shuffle } = require('../06 Shell/testUtils');
+const { randomArray, shuffle } = require('testUtils');
 
 console.log('dynamic array');
 
