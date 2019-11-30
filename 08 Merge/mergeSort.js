@@ -14,7 +14,7 @@ function mergeSort(a, m = 0) {
         }
         if (right - left <= m) {
             insertion(a, left, right);
-            return
+            return;
         }
         // split the run longer than 1 item into halves
         let middle = left + ((right - left) >> 1); // middle = mid point
@@ -46,9 +46,18 @@ function mergeSort(a, m = 0) {
     }
 
     function copyArray(array) {
-        const result = [];
+        if (Array.isArray(array)) {
+            const result = [];
+            for (let i = 0; i < array.length; i++) {
+                result.push(array[i]);
+            }
+            return result;
+        }
+
+        // типизированные массивы
+        const result = new array.constructor[Symbol.species](array.length);
         for (let i = 0; i < array.length; i++) {
-            result.push(array[i]);
+            result[i] = array[i];
         }
         return result;
     }

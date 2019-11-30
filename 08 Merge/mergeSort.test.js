@@ -1,5 +1,5 @@
 const {mergeSort} = require('./mergeSort');
-const {randomArray, sortedArray, reversedArray} = require('testUtils');
+const {randomArray, sortedArray, reversedArray, randomTypedFloatArray} = require('testUtils');
 
 describe('mergeSort', () => {
     it('random', () => {
@@ -28,5 +28,12 @@ describe('mergeSort', () => {
         const sortedArr = arr.slice().sort((a, b) => a - b);
 
         expect(mergeSort(arr, 10)).toEqual(sortedArr);
+    });
+
+    it('typed random', () => {
+        const arr = randomTypedFloatArray(10000);
+        const sortedArr = arr.slice().sort();
+
+        expect(mergeSort(arr)).toEqual(sortedArr);
     });
 });

@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "bench": "node --expose-gc bench.js"
   },
   "author": "",
   "license": "ISC",
