@@ -1,0 +1,14 @@
+{
+  "name": "08-merge",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "testUtils": "file:../testUtils"
+  }
+}
