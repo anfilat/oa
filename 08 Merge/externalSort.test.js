@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { createFile, isSortedFile, sortInMemory } = require('./externalSort');
+const { createFile, isSortedFile, sortInMemory, externalSort } = require('./externalSort');
 
 const size = 1_000_000;
 const chunkSize = 256 * 1024;
@@ -16,6 +16,13 @@ describe('external sort', () => {
     it('sort in memory', () => {
         createFile(dataFile, size, chunkSize);
         sortInMemory(dataFile);
+
+        expect(isSortedFile(dataFile, chunkSize)).toBe(true);
+    });
+
+    it('external memory', () => {
+        createFile(dataFile, size, chunkSize);
+        externalSort(dataFile, 0, chunkSize);
 
         expect(isSortedFile(dataFile, chunkSize)).toBe(true);
     });
