@@ -1,0 +1,15 @@
+{
+  "name": "09-sort",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "test": "jest",
+    "bench:ext": "node --expose-gc bench/bench.externalSort.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "testUtils": "file:../testUtils"
+  }
+}
