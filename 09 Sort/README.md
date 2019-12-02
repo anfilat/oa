@@ -4,9 +4,9 @@
 
 ||время|
 |---|---:|
-|Merge Sort|211s|
-|Merge Sort with insertion < 10|189s|
-|Merge Sort with insertion < 32|184s|
-|Counting sort||
+|Merge Sort|211.0s|
+|Merge Sort with insertion < 10|189.0s|
+|Merge Sort with insertion < 32|184.0s|
+|Counting sort|5.5s|
 
 Выводы
