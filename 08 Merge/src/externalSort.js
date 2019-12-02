@@ -1,5 +1,4 @@
 const fs = require('fs');
-const {mergeSort} = require('./mergeSort');
 const {PriorityQueueMin} = require('./priorityQueueMin');
 
 const bytesPerElement = Uint16Array.BYTES_PER_ELEMENT;
@@ -8,10 +7,10 @@ const mergeChunkSize = 64 * 1024;
 
 // внешняя сортировка, в два этапа
 // на первом этапе файл разбивается на чанки размера chunkSize, каждый из них сортируется
-// и записывается назад в тот же файл
+// и записывается назад в тот же файл. Для сортировки используется функция sort, получающая массив и сортирующая его на месте
 // на втором этапе все чанки сливаются во временный файл, затем временный файл записывается на место исходного
 // для слияния чанков используется очередь с приоритетами
-function externalSort(name, m = 0, chunkSize) {
+function externalSort(name, sort, chunkSize) {
     const size = getSize();
     const tempFile = name + '.tmp';
 
@@ -36,7 +35,7 @@ function externalSort(name, m = 0, chunkSize) {
             size -= len;
 
             fs.readSync(fd, buffer, 0, len * bytesPerElement, readPos * bytesPerElement);
-            mergeSort(buffer.subarray(0, len), m);
+            sort(buffer.subarray(0, len));
             fs.writeSync(fd, buffer, 0, len * bytesPerElement, writePos * bytesPerElement);
             readPos += len;
             writePos += len;

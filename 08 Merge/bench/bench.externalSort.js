@@ -8,9 +8,9 @@ const size = 1000000000;
 const chunkSize = 128 * 1024 * 1024;
 const dataFile = './data';
 
-test('externalSort', () => externalSort(dataFile, 0, chunkSize));
-test('externalSort with insertion 10', () => externalSort(dataFile, 10, chunkSize));
-test('externalSort with insertion 32', () => externalSort(dataFile, 32, chunkSize));
+test('externalSort', () => externalSort(dataFile, (arr) => mergeSort(arr, 0), chunkSize));
+test('externalSort with insertion 10', () => externalSort(dataFile, (arr) => mergeSort(arr, 10), chunkSize));
+test('externalSort with insertion 32', () => externalSort(dataFile, (arr) => mergeSort(arr, 32), chunkSize));
 
 test('sortInMemory', () => sortInMemory(dataFile));
 test('sortInMemory with insertion 10', () => sortInMemory(dataFile, 10));

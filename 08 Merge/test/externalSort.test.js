@@ -2,6 +2,7 @@ const fs = require('fs');
 const { createFile, isSortedFile } = require('../externalUtils');
 const { sortInMemory } = require('../src/sortInMemory');
 const { externalSort } = require('../src/externalSort');
+const { mergeSort } = require('../src/mergeSort');
 
 const size = 100000;
 const chunkSize = 16 * 1024;
@@ -24,7 +25,7 @@ describe('external sort', () => {
 
     it('external memory', () => {
         createFile(dataFile, size, chunkSize);
-        externalSort(dataFile, 0, chunkSize);
+        externalSort(dataFile, (arr) => mergeSort(arr, 0), chunkSize);
 
         expect(isSortedFile(dataFile, chunkSize)).toBe(true);
     });
