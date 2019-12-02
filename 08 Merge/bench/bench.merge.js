@@ -1,5 +1,5 @@
-const {heap} = require('../07 Heap/heap');
-const {mergeSort} = require('./mergeSort');
+const {heap} = require('../../07 Heap/heap');
+const {mergeSort} = require('../src/mergeSort');
 const { randomTypedFloatArray, shuffle, benchArray } = require('testUtils');
 
 benchWithSize(100000);

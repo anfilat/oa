@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "test": "jest",
-    "bench:merge": "node --expose-gc bench.merge.js",
-    "bench:ext": "node --expose-gc bench.externalSort.js"
+    "bench:merge": "node --expose-gc bench/bench.merge.js",
+    "bench:ext": "node --expose-gc bench/bench.externalSort.js"
   },
   "author": "",
   "license": "ISC",

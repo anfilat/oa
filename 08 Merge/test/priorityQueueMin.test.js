@@ -1,4 +1,4 @@
-const {PriorityQueueMin} = require('./priorityQueueMin');
+const {PriorityQueueMin} = require('../src/priorityQueueMin');
 
 describe('PriorityQueue', () => {
     it('create queue', () => {

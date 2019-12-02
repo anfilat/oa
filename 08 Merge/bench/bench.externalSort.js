@@ -1,8 +1,10 @@
-const { createFile, isSortedFile, sortInMemory, externalSort } = require('./externalSort');
 const { bench, randomTypedUint16Array } = require('testUtils');
-const {mergeSort} = require('./mergeSort');
+const { sortInMemory } = require('../src/sortInMemory');
+const { externalSort } = require('../src/externalSort');
+const { mergeSort } = require('../src/mergeSort');
+const { createFile, isSortedFile } = require('../externalUtils');
 
-const size = 1_000_000_000;
+const size = 1000000000;
 const chunkSize = 128 * 1024 * 1024;
 const dataFile = './data';
 

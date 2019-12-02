@@ -1,4 +1,4 @@
-const {mergeSort} = require('./mergeSort');
+const {mergeSort} = require('../src/mergeSort');
 const {randomArray, sortedArray, reversedArray, randomTypedFloatArray} = require('testUtils');
 
 describe('mergeSort', () => {

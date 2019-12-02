@@ -1,8 +1,10 @@
 const fs = require('fs');
-const { createFile, isSortedFile, sortInMemory, externalSort } = require('./externalSort');
+const { createFile, isSortedFile } = require('../externalUtils');
+const { sortInMemory } = require('../src/sortInMemory');
+const { externalSort } = require('../src/externalSort');
 
-const size = 1_000_000;
-const chunkSize = 256 * 1024;
+const size = 100000;
+const chunkSize = 16 * 1024;
 const dataFile = './data';
 
 describe('external sort', () => {

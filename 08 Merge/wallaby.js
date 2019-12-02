@@ -1,12 +1,12 @@
 module.exports = function () {
     return {
         files: [
-            '*.js',
-            '!*.test.js'
+            'src/*.js',
+            'externalUtils.js'
         ],
 
         tests: [
-            '*.test.js'
+            'test/*.test.js'
         ],
 
         env: {
