@@ -2,6 +2,7 @@ const fs = require('fs');
 
 const bytesPerElement = Uint16Array.BYTES_PER_ELEMENT;
 
+// сортировка подсчетом файла с 16-битными числами
 function countingSort(name, chunkSize) {
     const counts = readUnsortedFile(name, chunkSize);
     writeSortedFile(name, chunkSize, counts);
