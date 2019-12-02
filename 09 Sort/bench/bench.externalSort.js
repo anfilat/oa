@@ -9,8 +9,8 @@ const chunkSize = 128 * 1024 * 1024;
 const dataFile = './data';
 
 test('externalSort', () => externalSort(dataFile, (arr) => mergeSort(arr, 32), chunkSize));
-test('radixSort', () => externalSort(dataFile, (arr) => radixSort(arr, 10, 100000), chunkSize));
-test('countingSort', () => countingSort(dataFile, chunkSize));
+test('radixSort', () => externalSort(dataFile, (arr) => radixSort(arr, 16), chunkSize));
+test('countingSort', () => externalSort(dataFile, (arr) => countingSort(arr), chunkSize));
 
 function test(label, fn) {
     createFile(dataFile, size, chunkSize);

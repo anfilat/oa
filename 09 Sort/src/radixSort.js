@@ -1,35 +1,37 @@
 // поразрядная сортировка массива на месте
-function radixSort(array, base = 10, max) {
-    for (let exp = 1; exp < max; exp *= base) {
-        countingSort(array, base, exp);
+// массив целых чисел, maxBits - максимальная битность чисел
+function radixSort(array, maxBits) {
+    let exp;
+    for (exp = 0; exp < maxBits; exp += 4) {
+        countingSort(array);
     }
 
     return array;
-}
 
-function countingSort(array, base, exp) {
-    const counts = new Array(base).fill(0);
+    function countingSort(array) {
+        const counts = new Uint32Array(16);
 
-    // подсчет
-    for (let i = 0; i < array.length; i++) {
-        counts[digit(array[i], base, exp)]++;
+        // подсчет
+        for (let i = 0; i < array.length; i++) {
+            counts[digit(array[i])]++;
+        }
+        // последние индексы частей
+        for (let i = 1; i < 16; i++) {
+            counts[i] += counts[i - 1];
+        }
+        // копия сортируемого массива
+        const b = copyArray(array);
+        // перезаписываем оригинальный массив частично отсортированным
+        for (let i = array.length - 1; i >= 0; i--) {
+            const dig = digit(b[i]);
+            counts[dig]--;
+            array[counts[dig]] = b[i];
+        }
     }
-    // последние индексы частей
-    for (let i = 1; i < base; i++) {
-        counts[i] += counts[i - 1];
-    }
-    // копия сортируемого массива
-    const b = copyArray(array);
-    // перезаписываем оригинальный массив частично отсортированным
-    for (let i = array.length - 1; i >= 0; i--) {
-        const dig = digit(b[i], base, exp);
-        counts[dig]--;
-        array[counts[dig]] = b[i];
-    }
-}
 
-function digit(value, base, exp) {
-    return Math.floor(value / exp) % base;
+    function digit(value) {
+        return (value >> exp) & 15;
+    }
 }
 
 function copyArray(array) {

@@ -1,15 +1,11 @@
-const { createFile, isSortedFile } = require('testUtils');
+const { randomTypedUint16Array } = require('testUtils');
 const { countingSort } = require('../src/countingSort');
 
-const size = 100000;
-const chunkSize = 16 * 1024;
-const dataFile = './data';
+describe('counting sort', () => {
+    it('random typed array', () => {
+        const arr = randomTypedUint16Array(10000);
+        const sortedArr = arr.slice().sort((a, b) => a - b);
 
-describe('external sort', () => {
-    it('counting sort', () => {
-        createFile(dataFile, size, chunkSize);
-        countingSort(dataFile, chunkSize);
-
-        expect(isSortedFile(dataFile, chunkSize)).toBe(true);
+        expect(countingSort(arr)).toEqual(sortedArr);
     });
 });
