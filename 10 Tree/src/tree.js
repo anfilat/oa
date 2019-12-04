@@ -25,6 +25,12 @@ class Tree {
         return result;
     }
 
+    getLevels() {
+        const level = [];
+        this._walk(this.#root, (node, deep) => level[deep] = (level[deep] || 0) + 1);
+        return level;
+    }
+
     // добавляет узел.
     // если ключ уже есть, переписывается существующее значение
     insert(key, value = null) {
@@ -120,15 +126,15 @@ class Tree {
             return;
         }
 
-        walk(node);
+        walk(node, 0);
 
-        function walk(node) {
+        function walk(node, deep) {
             if (node.left) {
-                walk(node.left);
+                walk(node.left, deep + 1);
             }
-            fn(node);
+            fn(node, deep);
             if (node.right) {
-                walk(node.right);
+                walk(node.right, deep + 1);
             }
         }
     }
