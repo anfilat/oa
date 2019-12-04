@@ -1,37 +1,42 @@
 // поразрядная сортировка массива на месте
-// массив целых чисел, maxBits - максимальная битность чисел
+// массив целых чисел, maxBits - максимальная битность чисел (16 - 2 байтные целые, 32 - 4 байтные)
+
+// сортировка идет по одной шестнадцатитеричной цифре за раз (4 бита)
+const baseBits = 4;
+const base = 1 << baseBits;
+const baseMask = base - 1;
+
 function radixSort(array, maxBits) {
-    let exp;
-    for (exp = 0; exp < maxBits; exp += 4) {
-        countingSort(array);
+    for (let exp = 0; exp < maxBits; exp += baseBits) {
+        countingSort(array, exp);
     }
 
     return array;
+}
 
-    function countingSort(array) {
-        const counts = new Uint32Array(16);
+function countingSort(array, exp) {
+    const counts = new Uint32Array(base);
 
-        // подсчет
-        for (let i = 0; i < array.length; i++) {
-            counts[digit(array[i])]++;
-        }
-        // последние индексы частей
-        for (let i = 1; i < 16; i++) {
-            counts[i] += counts[i - 1];
-        }
-        // копия сортируемого массива
-        const b = copyArray(array);
-        // перезаписываем оригинальный массив частично отсортированным
-        for (let i = array.length - 1; i >= 0; i--) {
-            const dig = digit(b[i]);
-            counts[dig]--;
-            array[counts[dig]] = b[i];
-        }
+    // подсчет
+    for (let i = 0; i < array.length; i++) {
+        counts[digit(array[i], exp)]++;
     }
-
-    function digit(value) {
-        return (value >> exp) & 15;
+    // последние индексы частей
+    for (let i = 1; i < base; i++) {
+        counts[i] += counts[i - 1];
     }
+    // копия сортируемого массива
+    const prevArray = copyArray(array);
+    // перезаписываем оригинальный массив частично отсортированным
+    for (let i = prevArray.length - 1; i >= 0; i--) {
+        const dig = digit(prevArray[i], exp);
+        counts[dig]--;
+        array[counts[dig]] = prevArray[i];
+    }
+}
+
+function digit(value, exp) {
+    return (value >> exp) & baseMask;
 }
 
 function copyArray(array) {
