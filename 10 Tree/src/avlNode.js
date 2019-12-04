@@ -1,7 +1,7 @@
 class AVLNode {
     key;
     value;
-    balance = 0;
+    height = 0;
     parent;
     left = null;
     right = null;

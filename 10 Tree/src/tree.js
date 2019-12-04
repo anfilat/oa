@@ -7,7 +7,7 @@ class Tree {
         const tree = new Tree();
         if (values) {
             values.forEach(value => {
-                // values содержит только ключи или массивы из двух элементов [key, value]
+                // values может содержать только ключи или массивы из двух элементов [key, value]
                 if (Array.isArray(value)) {
                     tree.insert(value[0], value[1]);
                 } else {
@@ -25,6 +25,7 @@ class Tree {
         return result;
     }
 
+    // возвращает сколько узлов на каждом уровне
     getLevels() {
         const level = [];
         this._walk(this.#root, (node, deep) => level[deep] = (level[deep] || 0) + 1);

@@ -1,16 +1,15 @@
 const {AVLNode} = require('../src/avlNode');
 
-//http://rosettacode.org/wiki/AVL_tree#TypeScript
+//http://rosettacode.org/wiki/AVL_tree#TypeScript поправленный по
+//http://rosettacode.org/wiki/AVL_tree#Java
 class AVLTree {
     #root = null;
-    leftRot = 0;
-    rightRot = 0;
 
     static new(values) {
         const tree = new AVLTree();
         if (values) {
             values.forEach(value => {
-                // values содержит только ключи или массивы из двух элементов [key, value]
+                // values может содержать только ключи или массивы из двух элементов [key, value]
                 if (Array.isArray(value)) {
                     tree.insert(value[0], value[1]);
                 } else {
@@ -28,6 +27,7 @@ class AVLTree {
         return result;
     }
 
+    // возвращает сколько узлов на каждом уровне
     getLevels() {
         const level = [];
         this._walk(this.#root, (node, deep) => level[deep] = (level[deep] || 0) + 1);
@@ -38,7 +38,7 @@ class AVLTree {
     isWrongBalances() {
         let result = false;
         this._walk(this.#root, node => {
-            if (![-1, 0, 1].includes(node.balance)) {
+            if (![-1, 0, 1].includes(this._getBalance(node))) {
                 result = true;
             }
         });
@@ -81,13 +81,12 @@ class AVLTree {
 
     // возвращает - есть ли ключ
     isKey(key) {
-        const [node] = this._find(key);
-        return !!node;
+        return !!this._find(key);
     }
 
     // возвращает значение если есть
     get(key) {
-        const [node] = this._find(key);
+        const node = this._find(key);
         return node ? node.value : undefined;
     }
 
@@ -129,7 +128,7 @@ class AVLTree {
         }
     }
 
-    // возвращает пару - [0: узел, соответствующий ключу, 1: его родитель\последний узел в пути поиска]
+    // возвращает узел, соответствующий ключу
     _find(key) {
         let node = this.#root;
         let parent = null;
@@ -145,7 +144,7 @@ class AVLTree {
                 }
             }
         }
-        return [node, parent];
+        return node;
     }
 
     // прямой обход дерева с вызовом fn в каждом узле
@@ -168,15 +167,17 @@ class AVLTree {
     }
 
     _reBalance(node) {
-        this._setBalance(node);
+        this._reHeight(node);
 
-        if (node.balance === -2) {
+        const balance = this._getBalance(node);
+
+        if (balance === -2) {
             if (this._height(node.left.left) >= this._height(node.left.right)) {
                 node = this._rotateRight(node);
             } else {
                 node = this._rotateLeftThenRight(node);
             }
-        } else if (node.balance === 2) {
+        } else if (balance === 2) {
             if (this._height(node.right.right) >= this._height(node.right.left)) {
                 node = this._rotateLeft(node);
             } else {
@@ -221,10 +222,8 @@ class AVLTree {
             }
         }
 
-        this._setBalance(a);
-        this._setBalance(b);
-
-        this.leftRot++;
+        this._reHeight(a);
+        this._reHeight(b);
 
         return b;
     }
@@ -249,23 +248,27 @@ class AVLTree {
             }
         }
 
-        this._setBalance(a);
-        this._setBalance(b);
-
-        this.rightRot++;
+        this._reHeight(a);
+        this._reHeight(b);
 
         return b;
     }
 
-    _setBalance(node) {
-        node.balance = this._height(node.right) - this._height(node.left);
+    _getBalance(node) {
+        return this._height(node.right) - this._height(node.left);
+    }
+
+    _reHeight(node) {
+        if (node !== null) {
+            node.height = 1 + Math.max(this._height(node.left), this._height(node.right));
+        }
     }
 
     _height(node) {
         if (node === null) {
             return -1;
         }
-        return 1 + Math.max(this._height(node.left), this._height(node.right));
+        return node.height;
     }
 }
 
