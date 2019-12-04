@@ -6,6 +6,15 @@ function randomArray(n) {
     return arr;
 }
 
+function randomIntArray(n) {
+    const arr = [];
+    const max = 2 ** 31;
+    for (let i = 0; i < n; i++) {
+        arr[i] = Math.random() * max | 0;
+    }
+    return arr;
+}
+
 function sortedArray(n) {
     const arr = [];
     for (let i = 0; i < n; i++) {
@@ -66,12 +75,29 @@ function shuffle(arr, n) {
     arr[index] = value;
 }
 
+// n - сколько случайных элементов надо взять из массива
+function randomElements(arr, n) {
+    const indexes = new Set();
+
+    while (indexes.size < n) {
+        indexes.add(Math.floor(Math.random() * arr.length));
+    }
+
+    const result = [];
+    for (let i of indexes.values()) {
+        result.push(arr[i]);
+    }
+    return result;
+}
+
 module.exports = {
     randomArray,
+    randomIntArray,
     sortedArray,
     reversedArray,
     randomTypedFloatArray,
     randomTypedIntArray,
     randomTypedUint16Array,
-    shuffle
+    shuffle,
+    randomElements,
 };
