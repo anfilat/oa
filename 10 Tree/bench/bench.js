@@ -2,7 +2,7 @@ const { bench, randomIntArray, randomElements } = require('testUtils');
 const { Tree } = require('../src/tree');
 const { AVLTree } = require('../src/avlTree');
 
-const size = 200000;
+const size = 500000;
 
 const randomNumbers = randomIntArray(size);
 const sortedNumbers = randomNumbers.slice().sort((a, b) => a - b);
