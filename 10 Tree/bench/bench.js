@@ -13,11 +13,11 @@ console.log('fill', bench(() => randomTree = Tree.new(randomNumbers)));
 console.log('search', bench(() => findNumbers(randomTree)));
 console.log('remove', bench(() => removeNumbers(randomTree)));
 
-let sortedTree;
+/*let sortedTree;
 console.log('sorted tree');
 console.log('fill', bench(() => sortedTree = Tree.new(sortedNumbers)));
 console.log('search', bench(() => findNumbers(sortedTree)));
-console.log('remove', bench(() => removeNumbers(sortedTree)));
+console.log('remove', bench(() => removeNumbers(sortedTree)));*/
 
 let randomAVLTree;
 console.log('random AVL tree');

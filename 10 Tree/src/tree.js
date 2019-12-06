@@ -1,35 +1,12 @@
 const {Node} = require('./node');
+const {BaseTree} = require('./baseTree');
 
-class Tree {
-    #root = null;
-
+class Tree extends BaseTree {
     static new(values) {
         const tree = new Tree();
-        if (values) {
-            values.forEach(value => {
-                // values может содержать только ключи или массивы из двух элементов [key, value]
-                if (Array.isArray(value)) {
-                    tree.insert(value[0], value[1]);
-                } else {
-                    tree.insert(value);
-                }
-            });
-        }
+        tree.insertValues(values);
 
         return tree;
-    }
-
-    getSortedKeys() {
-        const result = [];
-        this._walk(this.#root, node => result.push(node.key));
-        return result;
-    }
-
-    // возвращает сколько узлов на каждом уровне
-    getLevels() {
-        const level = [];
-        this._walk(this.#root, (node, deep) => level[deep] = (level[deep] || 0) + 1);
-        return level;
     }
 
     // добавляет узел.
@@ -43,7 +20,7 @@ class Tree {
 
         const newNode = new Node(key, value);
         if (parent == null) {
-            this.#root = newNode;
+            this._root = newNode;
         } else {
             if (key < parent.key) {
                 parent.left = newNode;
@@ -51,18 +28,6 @@ class Tree {
                 parent.right = newNode;
             }
         }
-    }
-
-    // возвращает - есть ли ключ
-    isKey(key) {
-        const [node] = this._find(key);
-        return !!node;
-    }
-
-    // возвращает значение если есть
-    get(key) {
-        const [node] = this._find(key);
-        return node ? node.value : undefined;
     }
 
     remove(key) {
@@ -76,7 +41,7 @@ class Tree {
             const leftSubTree = node.left;
             if (parent === null) {
                 // удаляем элемент из корня
-                this.#root = leftSubTree;
+                this._root = leftSubTree;
             } else {
                 if (node === parent.left) {
                     parent.left = leftSubTree;
@@ -99,44 +64,6 @@ class Tree {
             }
             node.key = leftMost.key;
             node.value = leftMost.value;
-        }
-    }
-
-    // возвращает пару - [0: узел, соответствующий ключу, 1: его родитель\последний узел в пути поиска]
-    _find(key) {
-        let node = this.#root;
-        let parent = null;
-        while (node) {
-            if (node.key === key) {
-                break;
-            } else {
-                parent = node;
-                if (key < node.key) {
-                    node = node.left;
-                } else {
-                    node = node.right;
-                }
-            }
-        }
-        return [node, parent];
-    }
-
-    // прямой обход дерева с вызовом fn в каждом узле
-    _walk(node, fn) {
-        if (!node) {
-            return;
-        }
-
-        walk(node, 0);
-
-        function walk(node, deep) {
-            if (node.left) {
-                walk(node.left, deep + 1);
-            }
-            fn(node, deep);
-            if (node.right) {
-                walk(node.right, deep + 1);
-            }
         }
     }
 }

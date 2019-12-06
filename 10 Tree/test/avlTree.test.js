@@ -49,7 +49,7 @@ describe('tree', () => {
         expect(tree.isWrongBalances()).toEqual(false);
     });
 
-    it('удаление корня из пустого дерева', () => {
+    it('удаление из пустого дерева', () => {
         const tree = new AVLTree();
         tree.remove(6);
 
@@ -68,12 +68,15 @@ describe('tree', () => {
 
     // https://habr.com/ru/post/65617/
     it('удаление элемента с двумя потомками', () => {
-        const values = [33, 5, 1, 4, 20, 17, 31];
+        const values = [
+            [33, {key: 33}], [5, {key: 5}], [1, {key: 1}], [4, {key: 4}], [20, {key: 20}], [17, {key: 17}], [31, {key: 31}]
+        ];
         const tree = AVLTree.new(values);
         tree.remove(5);
 
         expect(tree.getSortedKeys()).toEqual([1, 4, 17, 20, 31, 33]);
         expect(tree.isWrongBalances()).toEqual(false);
+        expect(tree.isWrongValues()).toEqual(false);
     });
 
     it('удаление элементов', () => {

@@ -1,43 +1,20 @@
 const {AVLNode} = require('../src/avlNode');
+const {BaseTree} = require('./baseTree');
 
 //http://rosettacode.org/wiki/AVL_tree#TypeScript поправленный по
 //http://rosettacode.org/wiki/AVL_tree#Java
-class AVLTree {
-    #root = null;
-
+class AVLTree extends BaseTree {
     static new(values) {
         const tree = new AVLTree();
-        if (values) {
-            values.forEach(value => {
-                // values может содержать только ключи или массивы из двух элементов [key, value]
-                if (Array.isArray(value)) {
-                    tree.insert(value[0], value[1]);
-                } else {
-                    tree.insert(value);
-                }
-            });
-        }
+        tree.insertValues(values);
 
         return tree;
-    }
-
-    getSortedKeys() {
-        const result = [];
-        this._walk(this.#root, node => result.push(node.key));
-        return result;
-    }
-
-    // возвращает сколько узлов на каждом уровне
-    getLevels() {
-        const level = [];
-        this._walk(this.#root, (node, deep) => level[deep] = (level[deep] || 0) + 1);
-        return level;
     }
 
     // функция для тестирования корректности дерева
     isWrongBalances() {
         let result = false;
-        this._walk(this.#root, node => {
+        this._walk(this._root, node => {
             if (![-1, 0, 1].includes(this._getBalance(node))) {
                 result = true;
             }
@@ -48,120 +25,67 @@ class AVLTree {
     // добавляет узел.
     // если ключ уже есть, переписывается существующее значение
     insert(key, value = null) {
-        if (this.#root === null) {
-            this.#root = new AVLNode(key, value);
-        } else {
-            let node = this.#root;
-            let parent = null;
-
-            while (true) {
-                if (node.key === key) {
-                    node.value = value;
-                    return;
-                }
-
-                parent = node;
-
-                const goLeft = node.key > key;
-                node = goLeft ? node.left : node.right;
-
-                if (node === null) {
-                    if (goLeft) {
-                        parent.left = new AVLNode(key, value, parent);
-                    } else {
-                        parent.right = new AVLNode(key, value, parent);
-                    }
-
-                    this._reBalance(parent);
-                    break;
-                }
-            }
+        const [node, parent] = this._find(key);
+        if (node) {
+            node.value = value;
+            return;
         }
-    }
 
-    // возвращает - есть ли ключ
-    isKey(key) {
-        return !!this._find(key);
-    }
-
-    // возвращает значение если есть
-    get(key) {
-        const node = this._find(key);
-        return node ? node.value : undefined;
+        const newNode = new AVLNode(key, value, parent);
+        if (parent == null) {
+            this._root = newNode;
+        } else {
+            if (key < parent.key) {
+                parent.left = newNode;
+            } else {
+                parent.right = newNode;
+            }
+            this._reBalance(parent);
+        }
     }
 
     remove(key) {
-        if (this.#root === null) {
-            return;
-        }
-
-        let node = this.#root;
-        let parent = this.#root;
-        let delNode = null;
-        let child = this.#root;
-
-        while (child !== null) {
-            parent = node;
-            node = child;
-            child = key >= node.key ? node.right : node.left;
-            if (key === node.key) {
-                delNode = node;
-            }
-        }
-
-        if (delNode !== null) {
-            delNode.key = node.key;
-
-            child = node.left !== null ? node.left : node.right;
-
-            if (this.#root.key === key) {
-                this.#root = child;
-            } else {
-                if (parent.left === node) {
-                    parent.left = child;
-                } else {
-                    parent.right = child;
-                }
-
-                this._reBalance(parent);
-            }
+        const [node] = this._find(key);
+        if (node) {
+            this._delete(node);
         }
     }
 
-    // возвращает узел, соответствующий ключу
-    _find(key) {
-        let node = this.#root;
-        let parent = null;
-        while (node) {
-            if (node.key === key) {
-                break;
-            } else {
-                parent = node;
-                if (key < node.key) {
-                    node = node.left;
+    _delete(node) {
+        while (true) {
+            if (node.left === null && node.right === null) {
+                if (node.parent === null) {
+                    this._root = null;
                 } else {
-                    node = node.right;
+                    const parent = node.parent;
+                    if (parent.left === node) {
+                        parent.left = null;
+                    } else {
+                        parent.right = null;
+                    }
+                    this._reBalance(parent);
                 }
+                return;
             }
-        }
-        return node;
-    }
 
-    // прямой обход дерева с вызовом fn в каждом узле
-    _walk(node, fn) {
-        if (!node) {
-            return;
-        }
+            if (node.left !== null) {
+                let child = node.left;
+                while (child.right !== null) {
+                    child = child.right;
+                }
+                node.key = child.key;
+                node.value = child.value;
 
-        walk(node, 0);
+                node = child;
+            } else {
+                let child = node.right;
+                while (child.left !== null) {
+                    child = child.left;
+                }
+                node.key = child.key;
+                node.value = child.value;
 
-        function walk(node, deep) {
-            if (node.left) {
-                walk(node.left, deep + 1);
-            }
-            fn(node, deep);
-            if (node.right) {
-                walk(node.right, deep + 1);
+                node = child;
             }
         }
     }
@@ -188,7 +112,7 @@ class AVLTree {
         if (node.parent !== null) {
             this._reBalance(node.parent);
         } else {
-            this.#root = node;
+            this._root = node;
         }
     }
 
@@ -202,25 +126,30 @@ class AVLTree {
         return this._rotateRight(node);
     }
 
+    //     parent         parent
+    //       a              b
+    //    l     b   ->   a     r
+    //        c   r          l   c
     _rotateLeft(a) {
         const b = a.right;
-        b.parent = a.parent;
-        a.right = b.left;
+        const c = b.left;
+        const parent = a.parent;
 
-        if (a.right !== null) {
-            a.right.parent = a;
+        a.parent = b;
+        a.right = c;
+        if (c !== null) {
+            c.parent = a;
         }
 
-        b.left = a;
-        a.parent = b;
-
-        if (b.parent !== null) {
-            if (b.parent.right === a) {
-                b.parent.right = b;
+        b.parent = parent;
+        if (parent !== null) {
+            if (parent.right === a) {
+                parent.right = b;
             } else {
-                b.parent.left = b;
+                parent.left = b;
             }
         }
+        b.left = a;
 
         this._reHeight(a);
         this._reHeight(b);
@@ -228,25 +157,30 @@ class AVLTree {
         return b;
     }
 
+    //     parent        parent
+    //       a               b
+    //    b     r   ->    l     a
+    //  l   c                 c   r
     _rotateRight(a) {
         const b = a.left;
-        b.parent = a.parent;
-        a.left = b.right;
+        const c = b.right;
+        const parent = a.parent;
 
-        if (a.left !== null) {
-            a.left.parent = a;
+        a.parent = b;
+        a.left = c;
+        if (c !== null) {
+            c.parent = a;
         }
 
-        b.right = a;
-        a.parent = b;
-
-        if (b.parent !== null) {
-            if (b.parent.right === a) {
-                b.parent.right = b;
+        b.parent = parent;
+        if (parent !== null) {
+            if (parent.right === a) {
+                parent.right = b;
             } else {
-                b.parent.left = b;
+                parent.left = b;
             }
         }
+        b.right = a;
 
         this._reHeight(a);
         this._reHeight(b);
