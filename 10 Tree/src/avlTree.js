@@ -129,7 +129,7 @@ class AVLTree extends BaseTree {
     //     parent         parent
     //       a              b
     //    l     b   ->   a     r
-    //        c   r          l   c
+    //        c   r    l   c
     _rotateLeft(a) {
         const b = a.right;
         const c = b.left;
