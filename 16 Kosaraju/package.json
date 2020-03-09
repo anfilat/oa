@@ -1,0 +1,13 @@
+{
+  "name": "16-kosaraju",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^24.9.0"
+  }
+}
