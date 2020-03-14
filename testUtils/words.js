@@ -73,4 +73,6 @@ const words = [
   "voluptate",
 ];
 
-module.exports = loremIpsum;
+module.exports = {
+  loremIpsum,
+};

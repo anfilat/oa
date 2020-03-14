@@ -14,7 +14,7 @@ class Queue {
     }
 
     get head() {
-        return this.#head;
+        return this.#head.item;
     }
 
     enqueue(item) {

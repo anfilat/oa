@@ -1,8 +1,7 @@
 const assert = require('assert').strict;
-const { bench } = require('testUtils');
+const { bench, loremIpsum } = require('testUtils');
 const boyermoore = require('../src/boyermoore');
 const kmp = require('../src/kmp');
-const loremIpsum = require('./words');
 
 for (let size = 10_000; size <= 10_000_000; size *= 10) {
     console.log(size);
