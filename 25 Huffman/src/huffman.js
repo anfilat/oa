@@ -139,11 +139,11 @@ function buildCodes(hTree) {
                 lengths[node.symbol] = len;
             } else {
                 stack.push({
-                    node: node[0],
+                    node: node.tree0,
                     code: code << 1,
                     len: len + 1
                 }, {
-                    node: node[1],
+                    node: node.tree1,
                     code: (code << 1) + 1,
                     len: len + 1
                 });
@@ -239,9 +239,10 @@ function toDecoded(data, hTree) {
             byte = data[offsetData++];
             offsetInByte = 7;
         }
-        const bit = getBit(byte, offsetInByte--);
+
+        node = isBit(byte, offsetInByte) ? node.tree1 : node.tree0;
+        offsetInByte--;
         bits--;
-        node = bit ? node[1] : node[0];
         if (node instanceof Leaf) {
             // если массив с результатом заполнен, то увеличиваем его
             if (result.length === offsetResult) {
@@ -259,24 +260,24 @@ function toDecoded(data, hTree) {
     return result.subarray(0, offsetResult);
 }
 
-function getBit(byte, offset) {
+function isBit(byte, offset) {
     switch (offset) {
         case 0:
-            return byte & 0b1;
+            return (byte & 0b1) !== 0;
         case 1:
-            return (byte & 0b10) >> 1;
+            return (byte & 0b10) !== 0;
         case 2:
-            return (byte & 0b100) >> 2;
+            return (byte & 0b100) !== 0;
         case 3:
-            return (byte & 0b1000) >> 2;
+            return (byte & 0b1000) !== 0;
         case 4:
-            return (byte & 0b10000) >> 2;
+            return (byte & 0b10000) !== 0;
         case 5:
-            return (byte & 0b100000) >> 2;
+            return (byte & 0b100000) !== 0;
         case 6:
-            return (byte & 0b1000000) >> 2;
+            return (byte & 0b1000000) !== 0;
         case 7:
-            return (byte & 0b10000000) >> 2;
+            return (byte & 0b10000000) !== 0;
     }
 }
 
@@ -287,8 +288,8 @@ function Leaf(symbol, weight) {
 }
 
 function Node(tree0, tree1) {
-    this[0] = tree0;
-    this[1] = tree1;
+    this.tree0 = tree0;
+    this.tree1 = tree1;
     this.weight = tree0.weight + tree1.weight;
 }
 
